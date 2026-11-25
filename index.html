@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Amőba: five in a row</title>
-<meta name="description" content="Five in a row on graph paper. Open the link to join the game.">
+<meta name="description" content="Amőba: öt egy sorban, kockás papíron. Five in a row on graph paper.">
 <meta property="og:title" content="Amőba: five in a row">
-<meta property="og:description" content="You’re invited to a game. Tap to join.">
+<meta property="og:description" content="Játsszunk amőbát! Koppints a csatlakozáshoz. · Let’s play amőba! Tap to join.">
 <meta name="theme-color" content="#1E3F9C">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -171,6 +171,13 @@
     padding: .55rem .7rem;
   }
   .panel-msg { font-size: .9rem; margin: 0; min-height: 1.2em; }
+  .lang { display: flex; gap: .35rem; margin: 0 0 .9rem; }
+  .lang-btn {
+    font: .85rem var(--sans); padding: .25rem .7rem; border-radius: 999px; cursor: pointer;
+    border: 1.5px solid var(--edge); background: var(--paper); color: var(--muted);
+  }
+  .lang-btn[aria-pressed="true"] { border-color: var(--ink-x); color: var(--ink-x); font-weight: 700; }
+  .lang-btn:focus-visible { outline: 2px solid var(--ink-x); outline-offset: 2px; }
 
   @media (prefers-reduced-motion: reduce) {
     .cell path, .winline path { animation: none; stroke-dashoffset: 0; }
@@ -181,102 +188,106 @@
 <body>
 <main class="layout">
   <header class="intro">
+    <div class="lang" role="group" aria-label="Language / Nyelv">
+      <button type="button" class="lang-btn" data-lang="hu" lang="hu">Magyar</button>
+      <button type="button" class="lang-btn" data-lang="en" lang="en">English</button>
+    </div>
     <h1>Amőba</h1>
-    <p class="rules">Take turns marking squares. The first to get five in a row across, down or diagonally wins.</p>
+    <p class="rules" data-i18n="rules"></p>
     <p class="status" id="status" aria-live="polite"></p>
     <div id="scoreBlock">
-      <div class="score" aria-label="Score">
-        <div class="side"><span class="mark ink-x" id="mx">X</span><span class="num" id="sx">0</span><small id="lx">You</small></div>
+      <div class="score" data-i18n-aria="scoreAria">
+        <div class="side"><span class="mark ink-x" id="mx">X</span><span class="num" id="sx">0</span><small id="lx"></small></div>
         <span class="colon" aria-hidden="true">:</span>
-        <div class="side"><span class="mark ink-o" id="mo">O</span><span class="num" id="so">0</span><small id="lo">Computer</small></div>
+        <div class="side"><span class="mark ink-o" id="mo">O</span><span class="num" id="so">0</span><small id="lo"></small></div>
       </div>
-      <p class="draws" id="draws">Draws: 0</p>
+      <p class="draws" id="draws"></p>
     </div>
   </header>
 
-  <section class="page" aria-label="Game board">
+  <section class="page" data-i18n-aria="boardAria">
     <div class="board-wrap">
       <div class="board" id="board"></div>
       <svg class="winline" id="winline" aria-hidden="true" preserveAspectRatio="none"></svg>
     </div>
   </section>
 
-  <section class="controls" aria-label="Game settings">
+  <section class="controls" data-i18n-aria="settingsAria">
     <fieldset>
-      <legend>Play against</legend>
+      <legend data-i18n="legendMode"></legend>
       <div class="options">
-        <label class="opt"><input type="radio" name="mode" value="ai"><span>The computer</span></label>
-        <label class="opt"><input type="radio" name="mode" value="pvp"><span>Someone next to you</span></label>
-        <label class="opt"><input type="radio" name="mode" value="online"><span>Someone online</span></label>
-        <label class="opt"><input type="radio" name="mode" value="msg"><span>By message</span></label>
+        <label class="opt"><input type="radio" name="mode" value="ai"><span data-i18n="optAi"></span></label>
+        <label class="opt"><input type="radio" name="mode" value="pvp"><span data-i18n="optPvp"></span></label>
+        <label class="opt"><input type="radio" name="mode" value="online"><span data-i18n="optOnline"></span></label>
+        <label class="opt"><input type="radio" name="mode" value="msg"><span data-i18n="optMsg"></span></label>
       </div>
     </fieldset>
 
     <div class="panel" id="onlinePanel" hidden>
       <div>
-        <label class="label" for="myName">Your name</label>
-        <input class="field" id="myName" maxlength="24" autocomplete="nickname" placeholder="So the other player knows it’s you">
+        <label class="label" for="myName" data-i18n="yourName"></label>
+        <input class="field" id="myName" maxlength="24" autocomplete="nickname" data-i18n-ph="namePh">
       </div>
       <div id="lobby" class="stack">
-        <p class="note">You get a link to send. When the other person opens it, you’re playing.</p>
-        <button class="btn primary" id="inviteBtn" type="button">Invite someone</button>
+        <p class="note" data-i18n="lobbyNote"></p>
+        <button class="btn primary" id="inviteBtn" type="button" data-i18n="inviteBtn"></button>
       </div>
       <div id="ingame" class="stack" hidden>
         <div id="inviteBox" class="stack">
           <div>
-            <label class="label" for="inviteLink">Invite link</label>
+            <label class="label" for="inviteLink" data-i18n="inviteLink"></label>
             <div class="row">
               <input class="field" id="inviteLink" readonly>
-              <button class="btn primary" id="shareBtn" type="button">Share</button>
+              <button class="btn primary" id="shareBtn" type="button" data-i18n="share"></button>
             </div>
           </div>
         </div>
         <p class="note" id="connLine"></p>
         <div class="buttons">
-          <button class="btn primary" id="againBtn" type="button" hidden>Play again</button>
-          <button class="btn" id="leaveBtn" type="button">End game</button>
+          <button class="btn primary" id="againBtn" type="button" data-i18n="playAgain" hidden></button>
+          <button class="btn" id="leaveBtn" type="button"></button>
         </div>
       </div>
       <p class="panel-msg" id="onNote" aria-live="polite"></p>
     </div>
 
     <div class="panel" id="msgPanel" hidden>
-      <p class="note">For when you can’t both be online at once. Make a move, send the link, and the other person taps it to see your move.</p>
+      <p class="note" data-i18n="msgIntro"></p>
       <div id="sendBox" hidden>
-        <label class="label" for="sendCode">Send this</label>
+        <label class="label" for="sendCode" data-i18n="sendThis"></label>
         <div class="row">
           <input class="field" id="sendCode" readonly>
-          <button class="btn primary" id="copyCodeBtn" type="button">Share</button>
+          <button class="btn primary" id="copyCodeBtn" type="button" data-i18n="share"></button>
         </div>
       </div>
       <div>
-        <label class="label" for="pasteCode">Or paste a code or link you received</label>
+        <label class="label" for="pasteCode" data-i18n="pasteLabel"></label>
         <div class="row">
           <input class="field" id="pasteCode" autocomplete="off" spellcheck="false" placeholder="amoba-15-…">
-          <button class="btn" id="loadBtn" type="button">Load move</button>
+          <button class="btn" id="loadBtn" type="button" data-i18n="loadMove"></button>
         </div>
       </div>
       <p class="panel-msg" id="msgNote" aria-live="polite"></p>
     </div>
 
     <fieldset id="sideSet">
-      <legend>You play</legend>
+      <legend data-i18n="legendSide"></legend>
       <div class="options">
-        <label class="opt"><input type="radio" name="human" value="1"><span>X, moving first</span></label>
-        <label class="opt"><input type="radio" name="human" value="2"><span>O, moving second</span></label>
+        <label class="opt"><input type="radio" name="human" value="1"><span data-i18n="sideX"></span></label>
+        <label class="opt"><input type="radio" name="human" value="2"><span data-i18n="sideO"></span></label>
       </div>
     </fieldset>
     <fieldset id="sizeSet">
-      <legend>Board size</legend>
+      <legend data-i18n="legendSize"></legend>
       <div class="options">
         <label class="opt"><input type="radio" name="size" value="15"><span>15 × 15</span></label>
         <label class="opt"><input type="radio" name="size" value="19"><span>19 × 19</span></label>
       </div>
     </fieldset>
     <div class="buttons">
-      <button class="btn primary" id="newBtn" type="button">New game</button>
-      <button class="btn" id="undoBtn" type="button">Undo move</button>
-      <button class="btn" id="resetBtn" type="button">Reset score</button>
+      <button class="btn primary" id="newBtn" type="button"></button>
+      <button class="btn" id="undoBtn" type="button" data-i18n="undo"></button>
+      <button class="btn" id="resetBtn" type="button" data-i18n="reset"></button>
     </div>
     <p class="note" id="settingsNote"></p>
   </section>
@@ -286,11 +297,105 @@
 (function () {
   const DIRS = [[0, 1], [1, 0], [1, 1], [1, -1]];
   const W = [0, 1, 12, 120, 3000, 1000000];
-  const K = { settings: "amoba-v2", msg: "amoba-msg-v1", host: "amoba-host-v1", join: "amoba-join-v1", name: "amoba-name", token: "amoba-token" };
+  const K = { settings: "amoba-v2", msg: "amoba-msg-v1", host: "amoba-host-v1", join: "amoba-join-v1", name: "amoba-name", token: "amoba-token", lang: "amoba-lang" };
   const L = "abcdefghijklmnopqrs";
   const CODE_CHARS = "abcdefghjkmnpqrstuvwxyz23456789";
   const PEER_PREFIX = "amoba-5iar-";
-  const DRAW = "The page is full. It’s a draw.";
+  const T = {
+    en: {
+      title: "Amőba: five in a row",
+      rules: "Take turns marking squares. The first to get five in a row across, down or diagonally wins.",
+      scoreAria: "Score", boardAria: "Game board", settingsAria: "Game settings",
+      legendMode: "Play against", optAi: "The computer", optPvp: "Someone next to you", optOnline: "Someone online", optMsg: "By message",
+      yourName: "Your name", namePh: "So the other player knows it’s you",
+      lobbyNote: "You get a link to send. When the other person opens it, you’re playing.",
+      inviteBtn: "Invite someone", inviteLink: "Invite link", share: "Share", playAgain: "Play again",
+      endGame: "End game", leaveGame: "Leave game",
+      msgIntro: "For when you can’t both be online at once. Make a move, send the link, and the other person taps it to see your move.",
+      sendThis: "Send this", pasteLabel: "Or paste a code or link you received", loadMove: "Load move",
+      legendSide: "You play", sideX: "X, moving first", sideO: "O, moving second", legendSize: "Board size",
+      newGame: "New game", startOver: "Start over", undo: "Undo move", reset: "Reset score",
+      noteOnline: "Board size applies to the next game you start. On a keyboard, use the arrow keys and Enter to play.",
+      noteOther: "Changing a setting starts a new game. On a keyboard, use the arrow keys to move around the board and Enter to place a mark.",
+      you: "You", computer: "Computer", p1: "Player 1", p2: "Player 2", them: "Them",
+      draws: n => `Draws: ${n}`, drawsOnline: n => `Draws: ${n}. You swap X and O each round.`,
+      connectedTo: n => `Connected to ${n}`, notConnected: "Not connected right now",
+      cell: (r, c, p) => `Row ${r}, column ${c}, ${p === 1 ? "X" : p === 2 ? "O" : "empty"}`,
+      opp: "the other player", oppCap: "The other player",
+      draw: "The page is full. It’s a draw.",
+      winFive: m => `You win! Five ${m}s in a row.`, compWins: "The computer wins this one. Try again?",
+      thinking: "The computer is thinking…", yourMove: m => `Your move. You’re ${m}.`, toMove: m => `${m} to move.`,
+      wins: m => `${m} wins!`, sendLast: " Send it so they see the last move.",
+      msgWaiting: "Now send your move. When the reply comes, tap the link or paste it below.",
+      msgFirst: m => `You’re ${m}. Make the first move, then send it.`, msgYourMove: m => `Your move as ${m}.`,
+      onNone: "Invite someone with a link and play together live.", connecting: "Connecting…",
+      sendInvite: "Send the invite link. The game starts when they open it.", full: "This game is full.",
+      connectingGame: "Connecting to the game…", onWin: "You win! Press “Play again” for another round.",
+      oppWinsRound: o => `${o} wins this round.`, oppOffline: o => `${o} is offline. They can reopen the link to carry on.`,
+      reconnecting: "Reconnecting…", waitingFor: o => `Waiting for ${o} to move…`,
+      badMsg: "That doesn’t look like an amőba move. Paste the whole link or code you received.",
+      gameLoaded: "Game loaded.", theirMove: "Their move is on the board. Your turn.", emptyLoaded: "Empty board loaded. Your turn.",
+      noLib: "The connection library didn’t load. Check your internet connection and reload the page.",
+      badBrowser: "This browser can’t make direct connections. Try an up-to-date Chrome, Firefox, Safari or Edge.",
+      noService: "Can’t reach the connection service right now. Retrying…",
+      notWeb: "Invite links work once the game is on a website, such as GitHub Pages. Until then, use the other modes.",
+      reopening: "Reopening your game. After a reload this can take up to a minute…",
+      waitHost: "Waiting for the other player to open the game…", lost: "Connection lost. Reconnecting…",
+      fullNote: "This game already has two players. Ask for a new invite link.",
+      bye: "The other player ended the game. Ask them for a new invite link to play again.",
+      copied: "Copied. Paste it into a message.", copyBlocked: "Copying was blocked. The text is selected, so copy it yourself.",
+      shareInvite: "Let’s play amőba! Tap to join my game:", shareMove: "My amőba move:"
+    },
+    hu: {
+      title: "Amőba: öt egy sorban",
+      rules: "Felváltva rajzoljátok a jeleket a négyzetekbe. Az nyer, aki elsőként kirak ötöt egy sorban: vízszintesen, függőlegesen vagy átlósan.",
+      scoreAria: "Eredmény", boardAria: "Játéktábla", settingsAria: "Beállítások",
+      legendMode: "Ellenfél", optAi: "A gép", optPvp: "Valaki melletted", optOnline: "Valaki online", optMsg: "Üzenetben",
+      yourName: "A neved", namePh: "Hogy a másik játékos tudja, ki vagy",
+      lobbyNote: "Kapsz egy linket, amit elküldhetsz. Amint a másik megnyitja, már játszhattok is.",
+      inviteBtn: "Meghívás", inviteLink: "Meghívó link", share: "Megosztás", playAgain: "Új kör",
+      endGame: "Játék vége", leaveGame: "Kilépés",
+      msgIntro: "Arra az esetre, ha nem tudtok egyszerre online lenni. Lépj, küldd el a linket, és a másik a linkre koppintva látja a lépésedet.",
+      sendThis: "Ezt küldd el", pasteLabel: "Vagy illeszd be a kapott kódot vagy linket", loadMove: "Lépés betöltése",
+      legendSide: "Te vagy", sideX: "X, te kezdesz", sideO: "O, másodikként lépsz", legendSize: "Táblaméret",
+      newGame: "Új játék", startOver: "Újrakezdés", undo: "Visszalépés", reset: "Eredmény nullázása",
+      noteOnline: "A táblaméret a következő játékra vonatkozik. Billentyűzeten a nyilakkal és az Enterrel is játszhatsz.",
+      noteOther: "Egy beállítás módosítása új játékot indít. Billentyűzeten a nyilakkal mozoghatsz a táblán, és Enterrel teheted le a jelet.",
+      you: "Te", computer: "Gép", p1: "1. játékos", p2: "2. játékos", them: "Ellenfél",
+      draws: n => `Döntetlen: ${n}`, drawsOnline: n => `Döntetlen: ${n}. Minden körben cseréltek: aki X volt, O lesz.`,
+      connectedTo: n => `Csatlakozva: ${n}`, notConnected: "Most nincs kapcsolat",
+      cell: (r, c, p) => `${r}. sor, ${c}. oszlop, ${p === 1 ? "X" : p === 2 ? "O" : "üres"}`,
+      opp: "a másik játékos", oppCap: "A másik játékos",
+      draw: "Betelt a lap. Döntetlen.",
+      winFive: m => `Nyertél! Öt ${m} egy sorban.`, compWins: "Most a gép nyert. Még egy kör?",
+      thinking: "Gondolkodik a gép…", yourMove: m => `Te jössz. Te vagy az ${m}.`, toMove: m => `${m} következik.`,
+      wins: m => `${m} nyert!`, sendLast: " Küldd el, hogy lássa az utolsó lépést.",
+      msgWaiting: "Most küldd el a lépésedet. Ha jön a válasz, koppints a linkre, vagy illeszd be lent.",
+      msgFirst: m => `Te vagy az ${m}. Lépj elsőként, aztán küldd el.`, msgYourMove: m => `Te jössz, te vagy az ${m}.`,
+      onNone: "Hívj meg valakit egy linkkel, és játsszatok élőben.", connecting: "Kapcsolódás…",
+      sendInvite: "Küldd el a meghívó linket. A játék akkor indul, amikor megnyitja.", full: "Ez a játék már betelt.",
+      connectingGame: "Csatlakozás a játékhoz…", onWin: "Nyertél! Új körhöz nyomd meg az „Új kör” gombot.",
+      oppWinsRound: o => `${o} nyerte ezt a kört.`, oppOffline: o => `${o} most nincs csatlakozva. Ha újra megnyitja a linket, folytathatjátok.`,
+      reconnecting: "Újracsatlakozás…", waitingFor: o => `Várjuk, hogy ${o} lépjen…`,
+      badMsg: "Ez nem amőba-lépésnek tűnik. Illeszd be a teljes kapott linket vagy kódot.",
+      gameLoaded: "Játék betöltve.", theirMove: "A lépése felkerült a táblára. Te jössz.", emptyLoaded: "Üres tábla betöltve. Te jössz.",
+      noLib: "Nem töltődött be a kapcsolódáshoz szükséges program. Ellenőrizd az internetkapcsolatot, és töltsd újra az oldalt.",
+      badBrowser: "Ez a böngésző nem tud közvetlen kapcsolatot létesíteni. Próbáld egy friss Chrome, Firefox, Safari vagy Edge böngészővel.",
+      noService: "A kapcsolódási szolgáltatás most nem érhető el. Újrapróbálom…",
+      notWeb: "A meghívó linkek akkor működnek, ha a játék fent van egy weboldalon, például a GitHub Pagesen. Addig használd a többi módot.",
+      reopening: "A játékod újranyitása… Újratöltés után ez akár egy percig is tarthat.",
+      waitHost: "Várjuk, hogy a másik játékos megnyissa a játékot…", lost: "Megszakadt a kapcsolat. Újracsatlakozás…",
+      fullNote: "Ebben a játékban már ketten játszanak. Kérj új meghívó linket.",
+      bye: "A másik játékos befejezte a játékot. Ha újra játszanátok, kérj tőle új meghívó linket.",
+      copied: "Kimásolva. Illeszd be egy üzenetbe.", copyBlocked: "A másolás nem sikerült. A szöveg ki van jelölve, másold ki kézzel.",
+      shareInvite: "Játsszunk amőbát! Koppints a linkre, és csatlakozz:", shareMove: "Az amőba-lépésem:"
+    }
+  };
+  let LANG = "en";
+  function t(k, ...a) {
+    const v = (T[LANG] && k in T[LANG]) ? T[LANG][k] : T.en[k];
+    return typeof v === "function" ? v(...a) : (v == null ? "" : v);
+  }
   const IS_WEB = location.protocol === "https:" || location.protocol === "http:";
 
   const S = { mode: "ai", human: 1, size: 15, N: 15, moves: [], score: { 1: 0, 2: 0, d: 0 },
@@ -306,7 +411,8 @@
   // ---------- small helpers ----------
   const esc = s => String(s).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
   const ink = p => `<span class="ink ${p === 1 ? "ink-x" : "ink-o"}">${p === 1 ? "X" : "O"}</span>`;
-  const setNote = (el, t) => { el.textContent = t || ""; };
+  function setNote(el, key, ...args) { el._note = { key, args }; el.textContent = key ? t(key, ...args) : ""; }
+  const noteKey = el => (el._note ? el._note.key : "");
   const j = n => Math.round((Math.random() - .5) * 2 * n * 10) / 10;
   const markOf = i => (i % 2 ? 2 : 1);
   const lsGet = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
@@ -403,7 +509,7 @@
       `C ${21 + j(2)} ${31 + j(3)}, ${34 + j(3)} ${20 + j(2)}, ${57 + j(3)} ${22 + j(3)}`;
     return `<svg${cls} viewBox="0 0 100 100" aria-hidden="true"><path pathLength="1" d="${d}"/></svg>`;
   }
-  const cellLabel = (r, c, p) => `Row ${r + 1}, column ${c + 1}, ${p === 1 ? "X" : p === 2 ? "O" : "empty"}`;
+  const cellLabel = (r, c, p) => t("cell", r + 1, c + 1, p);
 
   function buildBoard() {
     const N = S.N;
@@ -582,13 +688,13 @@
   }
   function loadMsgText(text, fromLink) {
     const m = /(?:amoba|move)-(15|19)-([a-s]*)/i.exec(text || "");
-    if (!m) { setNote(msgNote, "That doesn’t look like an amőba move. Paste the whole link or code you received."); return false; }
+    if (!m) { setNote(msgNote, "badMsg"); return false; }
     S.N = +m[1];
     S.moves = decode(m[2].toLowerCase(), S.N);
     S.msg.waiting = false;
     recompute(); syncMsg(); render();
     $("#pasteCode").value = "";
-    setNote(msgNote, isOver() ? "Game loaded." : S.moves.length ? "Their move is on the board. Your turn." : "Empty board loaded. Your turn.");
+    setNote(msgNote, isOver() ? "gameLoaded" : S.moves.length ? "theirMove" : "emptyLoaded");
     return true;
   }
   function msgStartOver() {
@@ -598,7 +704,7 @@
 
   // ---------- online play (browser to browser) ----------
   const peerLib = () => typeof window.Peer === "function";
-  function noPeerLib() { setNote(onNote, "The connection library didn’t load. Check your internet connection and reload the page."); }
+  function noPeerLib() { setNote(onNote, "noLib"); }
   function scheduleRetry(fn, ms) { clearTimeout(NET.retry); NET.retry = setTimeout(fn, ms); }
   function destroyPeer(delay) {
     const p = NET.peer;
@@ -607,8 +713,8 @@
   }
   function netError(err, retryFn) {
     const t = err && err.type;
-    if (t === "browser-incompatible") { setNote(onNote, "This browser can’t make direct connections. Try an up-to-date Chrome, Firefox, Safari or Edge."); return; }
-    setNote(onNote, "Can’t reach the connection service right now. Retrying…");
+    if (t === "browser-incompatible") { setNote(onNote, "badBrowser"); return; }
+    setNote(onNote, "noService");
     scheduleRetry(retryFn, 5000);
   }
   function inviteLink() { return `${baseUrl()}#join-${NET.code}`; }
@@ -651,7 +757,7 @@
   // Host: the person who sends the invite keeps the official game.
   function hostStart(saved) {
     if (!peerLib()) { noPeerLib(); return; }
-    if (!IS_WEB) { setNote(onNote, "Invite links work once the game is on a website, such as GitHub Pages. Until then, use the other modes."); return; }
+    if (!IS_WEB) { setNote(onNote, "notWeb"); return; }
     leaveOnline(false);
     NET.role = "host";
     if (saved) {
@@ -669,7 +775,7 @@
   function openHostPeer() {
     if (NET.role !== "host") return;
     destroyPeer();
-    setNote(onNote, "Connecting…");
+    setNote(onNote, "connecting");
     const peer = new Peer(PEER_PREFIX + NET.code, { debug: 0 });
     NET.peer = peer;
     peer.on("open", () => { if (NET.peer !== peer) return; NET.ready = true; setNote(onNote, ""); renderUI(); });
@@ -683,7 +789,7 @@
       if (NET.peer !== peer) return;
       NET.ready = false;
       if (err.type === "unavailable-id") {
-        setNote(onNote, "Reopening your game. After a reload this can take up to a minute…");
+        setNote(onNote, "reopening");
         scheduleRetry(openHostPeer, 5000);
       } else if (err.type !== "peer-unavailable") netError(err, openHostPeer);
       renderUI();
@@ -757,7 +863,7 @@
   function openGuestPeer() {
     if (NET.role !== "guest") return;
     destroyPeer();
-    setNote(onNote, "Connecting…");
+    setNote(onNote, "connecting");
     const peer = new Peer({ debug: 0 });
     NET.peer = peer;
     peer.on("open", () => { if (NET.peer !== peer) return; NET.ready = true; connectToHost(); });
@@ -770,7 +876,7 @@
       if (NET.peer !== peer) return;
       if (err.type === "peer-unavailable") {
         if (!NET.connected) {
-          setNote(onNote, "Waiting for the other player to open the game…");
+          setNote(onNote, "waitHost");
           scheduleRetry(connectToHost, 4000);
         }
       } else netError(err, openGuestPeer);
@@ -813,7 +919,7 @@
     NET.conn = null; NET.connected = false; NET.pending = false;
     renderUI();
     if (NET.role === "guest" && !NET.full) {
-      setNote(onNote, "Connection lost. Reconnecting…");
+      setNote(onNote, "lost");
       scheduleRetry(connectToHost, 2000);
     }
   }
@@ -822,15 +928,15 @@
       NET.g = validG(msg);
       NET.oppName = cleanName(msg.name);
       NET.pending = false;
-      if (onNote.textContent.startsWith("Connect") || onNote.textContent.startsWith("Waiting")) setNote(onNote, "");
+      if (["connecting", "waitHost", "lost"].includes(noteKey(onNote))) setNote(onNote, "");
       applyG();
     } else if (msg.t === "full") {
       NET.full = true;
-      setNote(onNote, "This game already has two players. Ask for a new invite link.");
+      setNote(onNote, "fullNote");
       renderUI();
     } else if (msg.t === "bye") {
       leaveOnline(true);
-      setNote(onNote, "The other player ended the game. Ask them for a new invite link to play again.");
+      setNote(onNote, "bye");
       renderUI();
     }
   }
@@ -875,10 +981,10 @@
     const full = url ? `${text} ${url}` : text;
     try {
       await navigator.clipboard.writeText(full);
-      setNote(noteEl, "Copied. Paste it into a message.");
+      setNote(noteEl, "copied");
     } catch (e) {
       input.focus(); input.select();
-      setNote(noteEl, "Copying was blocked. The text is selected, so copy it yourself.");
+      setNote(noteEl, "copyBlocked");
     }
   }
 
@@ -905,38 +1011,38 @@
   // ---------- UI ----------
   function oppLabel(capital) {
     if (NET.oppName) return esc(NET.oppName);
-    return capital ? "The other player" : "the other player";
+    return t(capital ? "oppCap" : "opp");
   }
   function statusHTML() {
-    const t = turn(), wm = winnerMark(), over = isOver();
+    const tn = turn(), wm = winnerMark(), over = isOver();
     switch (S.mode) {
       case "ai":
-        if (over) return wm ? (wm === S.human ? `You win! Five ${ink(wm)}s in a row.` : "The computer wins this one. Try again?") : DRAW;
-        if (aiTimer) return "The computer is thinking…";
-        return `Your move. You’re ${ink(S.human)}.`;
+        if (over) return wm ? (wm === S.human ? t("winFive", ink(wm)) : t("compWins")) : t("draw");
+        if (aiTimer) return t("thinking");
+        return t("yourMove", ink(S.human));
       case "pvp":
-        if (over) return wm ? `${ink(wm)} wins!` : DRAW;
-        return `${ink(t)} to move.`;
+        if (over) return wm ? t("wins", ink(wm)) : t("draw");
+        return t("toMove", ink(tn));
       case "msg":
-        if (over) return (wm ? `${ink(wm)} wins!` : DRAW) + (S.msg.waiting ? " Send it so they see the last move." : "");
-        if (S.msg.waiting) return "Now send your move. When the reply comes, tap the link or paste it below.";
-        if (!S.moves.length) return `You’re ${ink(1)}. Make the first move, then send it.`;
-        return `Your move as ${ink(t)}.`;
+        if (over) return (wm ? t("wins", ink(wm)) : t("draw")) + (S.msg.waiting ? t("sendLast") : "");
+        if (S.msg.waiting) return t("msgWaiting");
+        if (!S.moves.length) return t("msgFirst", ink(1));
+        return t("msgYourMove", ink(tn));
       case "online": {
-        if (!NET.role) return "Invite someone with a link and play together live.";
+        if (!NET.role) return t("onNone");
         if (NET.role === "host") {
-          if (!NET.ready && !NET.connected) return "Connecting…";
-          if (!NET.everJoined) return "Send the invite link. The game starts when they open it.";
+          if (!NET.ready && !NET.connected) return t("connecting");
+          if (!NET.everJoined) return t("sendInvite");
         } else if (!NET.g) {
-          return NET.full ? "This game is full." : "Connecting to the game…";
+          return NET.full ? t("full") : t("connectingGame");
         }
         if (over) {
-          if (!wm) return DRAW;
-          return wm === myMark() ? "You win! Press “Play again” for another round." : `${oppLabel(true)} wins this round.`;
+          if (!wm) return t("draw");
+          return wm === myMark() ? t("onWin") : t("oppWinsRound", oppLabel(true));
         }
-        if (!NET.connected) return NET.role === "host" ? `${oppLabel(true)} is offline. They can reopen the link to carry on.` : "Reconnecting…";
-        if (myMark() === t) return `Your move. You’re ${ink(t)}.`;
-        return `Waiting for ${oppLabel(false)} to move…`;
+        if (!NET.connected) return NET.role === "host" ? t("oppOffline", oppLabel(true)) : t("reconnecting");
+        if (myMark() === tn) return t("yourMove", ink(tn));
+        return t("waitingFor", oppLabel(false));
       }
     }
     return "";
@@ -957,19 +1063,19 @@
       setSide($("#mx"), 1); setSide($("#mo"), 2);
       $("#sx").textContent = S.score[1];
       $("#so").textContent = S.score[2];
-      $("#draws").textContent = `Draws: ${S.score.d}`;
+      $("#draws").textContent = t("draws", S.score.d);
       const ai = mode === "ai";
-      $("#lx").textContent = ai ? (S.human === 1 ? "You" : "Computer") : "Player 1";
-      $("#lo").textContent = ai ? (S.human === 2 ? "You" : "Computer") : "Player 2";
+      $("#lx").textContent = ai ? (S.human === 1 ? t("you") : t("computer")) : t("p1");
+      $("#lo").textContent = ai ? (S.human === 2 ? t("you") : t("computer")) : t("p2");
     } else if (mode === "online" && NET.g && (NET.role === "guest" || NET.everJoined)) {
       const g = NET.g, mine = myMark(), host = NET.role === "host";
       scoreBlock.hidden = false;
       setSide($("#mx"), mine); setSide($("#mo"), 3 - mine);
       $("#sx").textContent = host ? g.score.host : g.score.guest;
       $("#so").textContent = host ? g.score.guest : g.score.host;
-      $("#lx").textContent = "You";
-      $("#lo").textContent = NET.oppName || "Them";
-      $("#draws").textContent = `Draws: ${g.score.d}. You swap X and O each round.`;
+      $("#lx").textContent = t("you");
+      $("#lo").textContent = NET.oppName || t("them");
+      $("#draws").textContent = t("drawsOnline", g.score.d);
     } else {
       scoreBlock.hidden = true;
     }
@@ -981,12 +1087,12 @@
     $("#ingame").hidden = !inGame;
     $("#inviteBox").hidden = NET.role !== "host";
     if (NET.role === "host") $("#inviteLink").value = inviteLink();
-    $("#leaveBtn").textContent = NET.role === "host" ? "End game" : "Leave game";
+    $("#leaveBtn").textContent = NET.role === "host" ? t("endGame") : t("leaveGame");
     $("#againBtn").hidden = !(inGame && NET.g && NET.connected && isOver());
     const line = $("#connLine");
     if (inGame && (NET.everJoined || NET.role === "guest")) {
       line.innerHTML = `<span class="dot${NET.connected ? " on" : ""}"></span>`;
-      line.append(NET.connected ? `Connected to ${NET.oppName || "the other player"}` : "Not connected right now");
+      line.append(NET.connected ? t("connectedTo", NET.oppName || t("opp")) : t("notConnected"));
       line.hidden = false;
     } else line.hidden = true;
 
@@ -999,13 +1105,11 @@
     $("#sideSet").hidden = mode !== "ai";
     $("#sizeSet").disabled = mode === "online" && inGame;
     $("#newBtn").hidden = !(local || mode === "msg");
-    $("#newBtn").textContent = mode === "msg" ? "Start over" : "New game";
+    $("#newBtn").textContent = mode === "msg" ? t("startOver") : t("newGame");
     $("#undoBtn").hidden = !(local || mode === "msg");
     $("#undoBtn").disabled = !canUndo();
     $("#resetBtn").hidden = !local;
-    $("#settingsNote").textContent = mode === "online"
-      ? "Board size applies to the next game you start. On a keyboard, use the arrow keys and Enter to play."
-      : "Changing a setting starts a new game. On a keyboard, use the arrow keys to move around the board and Enter to place a mark.";
+    $("#settingsNote").textContent = mode === "online" ? t("noteOnline") : t("noteOther");
 
     document.querySelector(`input[name=mode][value="${mode}"]`).checked = true;
     document.querySelector(`input[name=human][value="${S.human}"]`).checked = true;
@@ -1051,6 +1155,7 @@
     S.size = +i.value; save();
     if (S.mode === "ai" || S.mode === "pvp") newLocalGame();
     else if (S.mode === "msg") msgStartOver();
+    else if (!NET.role) { S.N = S.size; S.moves = []; recompute(); render(); }
     else renderUI();
   }));
   $("#newBtn").addEventListener("click", () => { if (S.mode === "msg") msgStartOver(); else newLocalGame(); });
@@ -1058,7 +1163,7 @@
   $("#resetBtn").addEventListener("click", () => { S.score = { 1: 0, 2: 0, d: 0 }; save(); renderUI(); });
 
   $("#inviteBtn").addEventListener("click", () => hostStart(null));
-  $("#shareBtn").addEventListener("click", () => shareOrCopy("Let’s play amőba! Tap to join my game:", inviteLink(), $("#inviteLink"), onNote));
+  $("#shareBtn").addEventListener("click", () => shareOrCopy(t("shareInvite"), inviteLink(), $("#inviteLink"), onNote));
   $("#leaveBtn").addEventListener("click", () => { leaveOnline(true); setNote(onNote, ""); renderUI(); });
   $("#againBtn").addEventListener("click", playAgain);
   let nameTimer = null;
@@ -1072,8 +1177,8 @@
   });
 
   $("#copyCodeBtn").addEventListener("click", () => {
-    if (IS_WEB) shareOrCopy("My amőba move:", msgShare(), $("#sendCode"), msgNote);
-    else shareOrCopy(`My amőba move: ${msgShare()}`, null, $("#sendCode"), msgNote);
+    if (IS_WEB) shareOrCopy(t("shareMove"), msgShare(), $("#sendCode"), msgNote);
+    else shareOrCopy(`${t("shareMove")} ${msgShare()}`, null, $("#sendCode"), msgNote);
   });
   $("#loadBtn").addEventListener("click", () => loadMsgText($("#pasteCode").value));
   $("#pasteCode").addEventListener("keydown", e => { if (e.key === "Enter") loadMsgText($("#pasteCode").value); });
@@ -1111,12 +1216,40 @@
   }
   window.addEventListener("hashchange", handleHash);
 
+  function detectLang() {
+    const saved = lsGet(K.lang);
+    if (saved === "en" || saved === "hu") return saved;
+    const first = (navigator.languages && navigator.languages[0]) || navigator.language || "";
+    return /^hu\b/i.test(first) ? "hu" : "en";
+  }
+  function applyLang() {
+    document.documentElement.lang = LANG;
+    document.title = t("title");
+    document.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = t(el.dataset.i18n); });
+    document.querySelectorAll("[data-i18n-ph]").forEach(el => { el.placeholder = t(el.dataset.i18nPh); });
+    document.querySelectorAll("[data-i18n-aria]").forEach(el => { el.setAttribute("aria-label", t(el.dataset.i18nAria)); });
+    document.querySelectorAll(".lang-btn").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.lang === LANG)));
+    cells.forEach(b => {
+      const r = +b.dataset.r, c = +b.dataset.c;
+      b.setAttribute("aria-label", cellLabel(r, c, board[r] ? board[r][c] : 0));
+    });
+    [onNote, msgNote].forEach(el => { if (el._note) el.textContent = el._note.key ? t(el._note.key, ...el._note.args) : ""; });
+    renderUI();
+  }
+  document.querySelectorAll(".lang-btn").forEach(b => b.addEventListener("click", () => {
+    LANG = b.dataset.lang;
+    lsSet(K.lang, LANG);
+    applyLang();
+  }));
+
   load();
+  LANG = detectLang();
   if (!handleHash()) {
     if (S.mode === "ai" || S.mode === "pvp") newLocalGame();
     else if (S.mode === "msg") enterMsg();
     else enterOnline();
   }
+  applyLang();
 })();
 </script>
 </body>
