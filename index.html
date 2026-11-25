@@ -172,6 +172,8 @@
   }
   .panel-msg { font-size: .9rem; margin: 0; min-height: 1.2em; }
   .lang { display: flex; gap: .35rem; margin: 0 0 .9rem; }
+  .home { display: inline-block; margin: 0 0 .7rem; font-size: .9rem; color: var(--ink-x); text-underline-offset: 3px; }
+  .home:focus-visible { outline: 2px solid var(--ink-x); outline-offset: 2px; border-radius: 4px; }
   .lang-btn {
     font: .85rem var(--sans); padding: .25rem .7rem; border-radius: 999px; cursor: pointer;
     border: 1.5px solid var(--edge); background: var(--paper); color: var(--muted);
@@ -188,6 +190,7 @@
 <body>
 <main class="layout">
   <header class="intro">
+    <a class="home" href="../" data-i18n="allGames"></a>
     <div class="lang" role="group" aria-label="Language / Nyelv">
       <button type="button" class="lang-btn" data-lang="hu" lang="hu">Magyar</button>
       <button type="button" class="lang-btn" data-lang="en" lang="en">English</button>
@@ -303,7 +306,7 @@
   const PEER_PREFIX = "amoba-5iar-";
   const T = {
     en: {
-      title: "Amőba: five in a row",
+      title: "Amőba: five in a row", allGames: "← All games",
       rules: "Take turns marking squares. The first to get five in a row across, down or diagonally wins.",
       scoreAria: "Score", boardAria: "Game board", settingsAria: "Game settings",
       legendMode: "Play against", optAi: "The computer", optPvp: "Someone next to you", optOnline: "Someone online", optMsg: "By message",
@@ -347,7 +350,7 @@
       shareInvite: "Let’s play amőba! Tap to join my game:", shareMove: "My amőba move:"
     },
     hu: {
-      title: "Amőba: öt egy sorban",
+      title: "Amőba: öt egy sorban", allGames: "← Összes játék",
       rules: "Felváltva rajzoljátok a jeleket a négyzetekbe. Az nyer, aki elsőként kirak ötöt egy sorban: vízszintesen, függőlegesen vagy átlósan.",
       scoreAria: "Eredmény", boardAria: "Játéktábla", settingsAria: "Beállítások",
       legendMode: "Ellenfél", optAi: "A gép", optPvp: "Valaki melletted", optOnline: "Valaki online", optMsg: "Üzenetben",
