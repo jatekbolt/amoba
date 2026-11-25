@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Amőba: five in a row</title>
+<meta name="description" content="Five in a row on graph paper. Open the link to join the game.">
+<meta property="og:title" content="Amőba: five in a row">
+<meta property="og:description" content="You’re invited to a game. Tap to join.">
+<meta name="theme-color" content="#1E3F9C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Amőba">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%23F9FBFD'/%3E%3Cpath d='M18 18L48 48M48 18L18 48' stroke='%231E3F9C' stroke-width='9' stroke-linecap='round'/%3E%3Ccircle cx='68' cy='68' r='16' fill='none' stroke='%23C0392B' stroke-width='9'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --desk: #E2E8EF; --paper: #F9FBFD; --grid: #B7CDE3; --margin: #E06D75;
+    --ink-x: #1E3F9C; --ink-o: #C0392B; --text: #22303F; --muted: #586676;
+    --edge: #C9D4E0; --hl: rgba(255, 220, 80, .5);
+    --hand: "Kalam", "Comic Sans MS", "Segoe Print", "Bradley Hand", cursive;
+    --sans: "Atkinson Hyperlegible", "Segoe UI", system-ui, -apple-system, sans-serif;
+    color-scheme: light;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --desk: #0F151D; --paper: #18212D; --grid: #2D3E53; --margin: #94444D;
+      --ink-x: #86A9FF; --ink-o: #FF8576; --text: #E2E8F0; --muted: #9AA8B8;
+      --edge: #2A3647; --hl: rgba(255, 214, 90, .2);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --desk: #0F151D; --paper: #18212D; --grid: #2D3E53; --margin: #94444D;
+    --ink-x: #86A9FF; --ink-o: #FF8576; --text: #E2E8F0; --muted: #9AA8B8;
+    --edge: #2A3647; --hl: rgba(255, 214, 90, .2);
+    color-scheme: dark;
+  }
+  *, *::before, *::after { box-sizing: inherit; }
+  [hidden] { display: none !important; }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  body { margin: 0; background: var(--desk); color: var(--text); font-family: var(--sans); font-size: 1rem; line-height: 1.5; }
+
+  .layout {
+    max-width: 1240px; margin: 0 auto; padding: 20px;
+    display: grid; gap: 20px;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "intro" "page" "controls";
+  }
+  @media (min-width: 860px) {
+    .layout {
+      grid-template-columns: minmax(260px, 300px) minmax(0, 1fr);
+      grid-template-areas: "intro page" "controls page";
+      grid-template-rows: auto 1fr;
+      align-items: start; padding: 32px; gap: 24px 36px;
+    }
+  }
+  .intro { grid-area: intro; }
+  h1 {
+    font-family: var(--hand); font-weight: 700;
+    font-size: clamp(2.8rem, 7vw, 3.8rem); line-height: 1;
+    color: var(--ink-x); margin: 0 0 .35rem;
+    transform: rotate(-2deg); transform-origin: left center;
+  }
+  .rules { margin: 0 0 1.1rem; color: var(--muted); max-width: 34ch; }
+  .status { font-family: var(--hand); font-size: 1.45rem; line-height: 1.3; min-height: 2.6em; margin: 0 0 .6rem; }
+  .ink { font-family: var(--hand); font-weight: 700; }
+  .ink-x { color: var(--ink-x); }
+  .ink-o { color: var(--ink-o); }
+
+  .score { display: flex; align-items: flex-end; gap: .9rem; font-family: var(--hand); }
+  .score .side { display: grid; justify-items: center; line-height: 1.1; min-width: 4.5rem; }
+  .score .mark { font-size: 1.5rem; font-weight: 700; }
+  .score .num { font-size: 2.4rem; font-weight: 700; }
+  .score small { font-family: var(--sans); font-size: .85rem; color: var(--muted); max-width: 9rem; text-align: center; overflow-wrap: anywhere; }
+  .score .colon { font-size: 2.2rem; padding-bottom: 1.35rem; color: var(--muted); }
+  .draws { font-size: .9rem; color: var(--muted); margin: .25rem 0 0; }
+  .dot { display: inline-block; width: .55rem; height: .55rem; border-radius: 50%; margin-right: .35rem; background: var(--muted); vertical-align: middle; }
+  .dot.on { background: #2E9E5B; }
+
+  .page {
+    grid-area: page; position: relative;
+    background: var(--paper); border: 1px solid var(--edge);
+    border-radius: 4px 14px 14px 4px;
+    padding: 18px 18px 18px 46px; min-width: 0;
+  }
+  .page::before { content: ""; position: absolute; top: 0; bottom: 0; left: 28px; width: 2px; background: var(--margin); opacity: .75; }
+  @media (max-width: 520px) {
+    .layout { padding: 14px; gap: 16px; }
+    .page { padding: 10px 10px 10px 28px; }
+    .page::before { left: 16px; }
+  }
+  .board-wrap { position: relative; width: max-content; }
+  .board {
+    --cell: 30px; --turn-ink: var(--ink-x);
+    display: grid;
+    grid-template-columns: repeat(var(--n), var(--cell));
+    grid-auto-rows: var(--cell);
+    background-image:
+      linear-gradient(to right, var(--grid) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid) 1px, transparent 1px);
+    background-size: var(--cell) var(--cell);
+    border-right: 1px solid var(--grid); border-bottom: 1px solid var(--grid);
+  }
+  .board[data-turn="2"] { --turn-ink: var(--ink-o); }
+  .cell {
+    width: var(--cell); height: var(--cell); padding: 0; margin: 0; border: 0;
+    background: transparent; cursor: pointer; display: block;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .board:not(.locked) .cell:not(.filled):hover { background: color-mix(in srgb, var(--turn-ink) 13%, transparent); }
+  .board.locked .cell { cursor: default; }
+  .cell:focus-visible { outline: 2px solid var(--turn-ink); outline-offset: -2px; }
+  .cell.last { background: var(--hl); }
+  .cell.x { color: var(--ink-x); }
+  .cell.o { color: var(--ink-o); }
+  .cell svg { width: 100%; height: 100%; display: block; pointer-events: none; }
+  .cell path {
+    fill: none; stroke: currentColor; stroke-width: 9;
+    stroke-linecap: round; stroke-linejoin: round;
+    stroke-dasharray: 1; stroke-dashoffset: 1;
+    animation: draw .2s ease-out forwards;
+  }
+  .cell path.s2 { animation-delay: .16s; }
+  .cell.o path { animation-duration: .32s; }
+  .cell svg.still path { animation: none; stroke-dashoffset: 0; }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  .winline { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+  .winline path {
+    fill: none; stroke-width: .15; stroke-linecap: round; opacity: .85;
+    stroke-dasharray: 1; stroke-dashoffset: 1;
+    animation: draw .5s .15s ease-in-out forwards;
+  }
+
+  .controls { grid-area: controls; display: grid; gap: 1rem; }
+  fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+  fieldset[disabled] { opacity: .45; }
+  legend, .label { display: block; font-weight: 700; padding: 0; margin-bottom: .35rem; font-size: .95rem; }
+  .options { display: flex; flex-wrap: wrap; gap: .4rem; }
+  .opt { position: relative; }
+  .opt input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+  .opt span {
+    display: inline-block; padding: .4rem .75rem;
+    border: 1.5px solid var(--edge); border-radius: 8px;
+    background: var(--paper); font-size: .95rem; cursor: pointer;
+  }
+  .opt input:checked + span { border-color: var(--ink-x); color: var(--ink-x); font-weight: 700; box-shadow: inset 0 -3px 0 var(--ink-x); }
+  .opt input:focus-visible + span { outline: 2px solid var(--ink-x); outline-offset: 2px; }
+
+  .buttons { display: flex; flex-wrap: wrap; gap: .5rem; }
+  .btn {
+    font: 700 1rem var(--sans); padding: .6rem 1rem; border-radius: 8px;
+    border: 2px solid var(--text); background: transparent; color: var(--text); cursor: pointer;
+  }
+  .btn.primary { background: var(--ink-x); border-color: var(--ink-x); color: var(--paper); }
+  .btn:disabled { opacity: .4; cursor: default; }
+  .btn:focus-visible, .field:focus-visible { outline: 2px solid var(--ink-x); outline-offset: 2px; }
+  .note { font-size: .85rem; color: var(--muted); margin: 0; }
+  .panel { display: grid; gap: .9rem; padding: 1rem; border: 1.5px dashed var(--edge); border-radius: 10px; }
+  .stack { display: grid; gap: .9rem; }
+  .row { display: flex; gap: .5rem; }
+  .row .field { flex: 1; min-width: 0; }
+  .field {
+    font: 1rem var(--sans); color: var(--text); width: 100%;
+    background: var(--paper); border: 1.5px solid var(--edge); border-radius: 8px;
+    padding: .55rem .7rem;
+  }
+  .panel-msg { font-size: .9rem; margin: 0; min-height: 1.2em; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cell path, .winline path { animation: none; stroke-dashoffset: 0; }
+  }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js"></script>
+</head>
+<body>
+<main class="layout">
+  <header class="intro">
+    <h1>Amőba</h1>
+    <p class="rules">Take turns marking squares. The first to get five in a row across, down or diagonally wins.</p>
+    <p class="status" id="status" aria-live="polite"></p>
+    <div id="scoreBlock">
+      <div class="score" aria-label="Score">
+        <div class="side"><span class="mark ink-x" id="mx">X</span><span class="num" id="sx">0</span><small id="lx">You</small></div>
+        <span class="colon" aria-hidden="true">:</span>
+        <div class="side"><span class="mark ink-o" id="mo">O</span><span class="num" id="so">0</span><small id="lo">Computer</small></div>
+      </div>
+      <p class="draws" id="draws">Draws: 0</p>
+    </div>
+  </header>
+
+  <section class="page" aria-label="Game board">
+    <div class="board-wrap">
+      <div class="board" id="board"></div>
+      <svg class="winline" id="winline" aria-hidden="true" preserveAspectRatio="none"></svg>
+    </div>
+  </section>
+
+  <section class="controls" aria-label="Game settings">
+    <fieldset>
+      <legend>Play against</legend>
+      <div class="options">
+        <label class="opt"><input type="radio" name="mode" value="ai"><span>The computer</span></label>
+        <label class="opt"><input type="radio" name="mode" value="pvp"><span>Someone next to you</span></label>
+        <label class="opt"><input type="radio" name="mode" value="online"><span>Someone online</span></label>
+        <label class="opt"><input type="radio" name="mode" value="msg"><span>By message</span></label>
+      </div>
+    </fieldset>
+
+    <div class="panel" id="onlinePanel" hidden>
+      <div>
+        <label class="label" for="myName">Your name</label>
+        <input class="field" id="myName" maxlength="24" autocomplete="nickname" placeholder="So the other player knows it’s you">
+      </div>
+      <div id="lobby" class="stack">
+        <p class="note">You get a link to send. When the other person opens it, you’re playing.</p>
+        <button class="btn primary" id="inviteBtn" type="button">Invite someone</button>
+      </div>
+      <div id="ingame" class="stack" hidden>
+        <div id="inviteBox" class="stack">
+          <div>
+            <label class="label" for="inviteLink">Invite link</label>
+            <div class="row">
+              <input class="field" id="inviteLink" readonly>
+              <button class="btn primary" id="shareBtn" type="button">Share</button>
+            </div>
+          </div>
+        </div>
+        <p class="note" id="connLine"></p>
+        <div class="buttons">
+          <button class="btn primary" id="againBtn" type="button" hidden>Play again</button>
+          <button class="btn" id="leaveBtn" type="button">End game</button>
+        </div>
+      </div>
+      <p class="panel-msg" id="onNote" aria-live="polite"></p>
+    </div>
+
+    <div class="panel" id="msgPanel" hidden>
+      <p class="note">For when you can’t both be online at once. Make a move, send the link, and the other person taps it to see your move.</p>
+      <div id="sendBox" hidden>
+        <label class="label" for="sendCode">Send this</label>
+        <div class="row">
+          <input class="field" id="sendCode" readonly>
+          <button class="btn primary" id="copyCodeBtn" type="button">Share</button>
+        </div>
+      </div>
+      <div>
+        <label class="label" for="pasteCode">Or paste a code or link you received</label>
+        <div class="row">
+          <input class="field" id="pasteCode" autocomplete="off" spellcheck="false" placeholder="amoba-15-…">
+          <button class="btn" id="loadBtn" type="button">Load move</button>
+        </div>
+      </div>
+      <p class="panel-msg" id="msgNote" aria-live="polite"></p>
+    </div>
+
+    <fieldset id="sideSet">
+      <legend>You play</legend>
+      <div class="options">
+        <label class="opt"><input type="radio" name="human" value="1"><span>X, moving first</span></label>
+        <label class="opt"><input type="radio" name="human" value="2"><span>O, moving second</span></label>
+      </div>
+    </fieldset>
+    <fieldset id="sizeSet">
+      <legend>Board size</legend>
+      <div class="options">
+        <label class="opt"><input type="radio" name="size" value="15"><span>15 × 15</span></label>
+        <label class="opt"><input type="radio" name="size" value="19"><span>19 × 19</span></label>
+      </div>
+    </fieldset>
+    <div class="buttons">
+      <button class="btn primary" id="newBtn" type="button">New game</button>
+      <button class="btn" id="undoBtn" type="button">Undo move</button>
+      <button class="btn" id="resetBtn" type="button">Reset score</button>
+    </div>
+    <p class="note" id="settingsNote"></p>
+  </section>
+</main>
+
+<script>
+(function () {
+  const DIRS = [[0, 1], [1, 0], [1, 1], [1, -1]];
+  const W = [0, 1, 12, 120, 3000, 1000000];
+  const K = { settings: "amoba-v2", msg: "amoba-msg-v1", host: "amoba-host-v1", join: "amoba-join-v1", name: "amoba-name", token: "amoba-token" };
+  const L = "abcdefghijklmnopqrs";
+  const CODE_CHARS = "abcdefghjkmnpqrstuvwxyz23456789";
+  const PEER_PREFIX = "amoba-5iar-";
+  const DRAW = "The page is full. It’s a draw.";
+  const IS_WEB = location.protocol === "https:" || location.protocol === "http:";
+
+  const S = { mode: "ai", human: 1, size: 15, N: 15, moves: [], score: { 1: 0, 2: 0, d: 0 },
+              msg: { N: 15, moves: "", waiting: false } };
+  const NET = { role: null, code: null, peer: null, conn: null, pendingConn: null, connected: false, ready: false,
+                lastSeen: 0, boundToken: null, everJoined: false, full: false, pending: false, g: null, oppName: "", retry: null };
+  let board = [], win = null, aiTimer = null, cells = [], drawn = [], drawnN = 0, winKey = "", focusIdx = 0;
+
+  const $ = s => document.querySelector(s);
+  const boardEl = $("#board"), lineSvg = $("#winline"), statusEl = $("#status"), page = $(".page");
+  const onNote = $("#onNote"), msgNote = $("#msgNote");
+
+  // ---------- small helpers ----------
+  const esc = s => String(s).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+  const ink = p => `<span class="ink ${p === 1 ? "ink-x" : "ink-o"}">${p === 1 ? "X" : "O"}</span>`;
+  const setNote = (el, t) => { el.textContent = t || ""; };
+  const j = n => Math.round((Math.random() - .5) * 2 * n * 10) / 10;
+  const markOf = i => (i % 2 ? 2 : 1);
+  const lsGet = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+  const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+  const lsDel = k => { try { localStorage.removeItem(k); } catch (e) {} };
+  const cleanName = v => (typeof v === "string" ? v.replace(/\s+/g, " ").trim().slice(0, 24) : "");
+  const myName = () => cleanName($("#myName").value);
+  const baseUrl = () => location.href.split("#")[0];
+  function randomCode(n) {
+    const a = new Uint32Array(n);
+    crypto.getRandomValues(a);
+    return Array.from(a, v => CODE_CHARS[v % CODE_CHARS.length]).join("");
+  }
+  function myToken() {
+    let t = lsGet(K.token);
+    if (!t) { t = randomCode(16); lsSet(K.token, t); }
+    return t;
+  }
+  function setHash(name) {
+    try {
+      if (name) history.replaceState(null, "", "#" + name);
+      else if (location.hash) history.replaceState(null, "", location.pathname + location.search);
+    } catch (e) {}
+  }
+
+  function load() {
+    try {
+      const s = JSON.parse(lsGet(K.settings) || "null");
+      if (s) {
+        if (s.size === 15 || s.size === 19) S.size = s.size;
+        if (["ai", "pvp", "online", "msg"].includes(s.mode)) S.mode = s.mode;
+        if (s.human === 1 || s.human === 2) S.human = s.human;
+        if (s.score) S.score = { 1: +s.score[1] || 0, 2: +s.score[2] || 0, d: +s.score.d || 0 };
+      }
+      const m = JSON.parse(lsGet(K.msg) || "null");
+      if (m) S.msg = { N: m.N === 19 ? 19 : 15, moves: typeof m.moves === "string" ? m.moves : "", waiting: !!m.waiting };
+    } catch (e) {}
+    $("#myName").value = cleanName(lsGet(K.name) || "");
+  }
+  const save = () => lsSet(K.settings, JSON.stringify({ size: S.size, mode: S.mode, human: S.human, score: S.score }));
+  const saveMsg = () => lsSet(K.msg, JSON.stringify(S.msg));
+
+  // ---------- rules ----------
+  function findWin(b, N, r, c, p) {
+    const inB = (y, x) => y >= 0 && x >= 0 && y < N && x < N;
+    for (const [dr, dc] of DIRS) {
+      let a = 0, z = 0;
+      while (inB(r - (a + 1) * dr, c - (a + 1) * dc) && b[r - (a + 1) * dr][c - (a + 1) * dc] === p) a++;
+      while (inB(r + (z + 1) * dr, c + (z + 1) * dc) && b[r + (z + 1) * dr][c + (z + 1) * dc] === p) z++;
+      if (a + z + 1 >= 5) return { r1: r - a * dr, c1: c - a * dc, r2: r + z * dr, c2: c + z * dc, dr, dc };
+    }
+    return null;
+  }
+  function recompute() {
+    const N = S.N;
+    board = Array.from({ length: N }, () => new Array(N).fill(0));
+    S.moves.forEach(([r, c], i) => { board[r][c] = markOf(i); });
+    win = null;
+    if (S.moves.length) {
+      const [r, c] = S.moves[S.moves.length - 1];
+      win = findWin(board, N, r, c, markOf(S.moves.length - 1));
+    }
+  }
+  const turn = () => (S.moves.length % 2 ? 2 : 1);
+  const isOver = () => !!win || S.moves.length >= S.N * S.N;
+  const winnerMark = () => (win ? markOf(S.moves.length - 1) : 0);
+  const encode = moves => moves.map(([r, c]) => L[c] + L[r]).join("");
+  function decode(str, N) {
+    const out = [];
+    if (typeof str !== "string") return out;
+    const b = Array.from({ length: N }, () => new Array(N).fill(0));
+    for (let i = 0; i + 1 < str.length; i += 2) {
+      const c = L.indexOf(str[i]), r = L.indexOf(str[i + 1]);
+      if (c < 0 || r < 0 || c >= N || r >= N || b[r][c]) break;
+      const p = markOf(out.length);
+      b[r][c] = p;
+      out.push([r, c]);
+      if (findWin(b, N, r, c, p)) break;
+    }
+    return out;
+  }
+
+  // ---------- drawing ----------
+  function markSVG(p, animate) {
+    const cls = animate ? "" : ' class="still"';
+    if (p === 1) {
+      const a = `M${22 + j(3)} ${22 + j(3)} Q ${50 + j(4)} ${50 + j(4)} ${78 + j(3)} ${78 + j(3)}`;
+      const b = `M${78 + j(3)} ${22 + j(3)} Q ${50 + j(4)} ${50 + j(4)} ${22 + j(3)} ${78 + j(3)}`;
+      return `<svg${cls} viewBox="0 0 100 100" aria-hidden="true"><path pathLength="1" d="${a}"/><path class="s2" pathLength="1" d="${b}"/></svg>`;
+    }
+    const d = `M${52 + j(3)} ${19 + j(2)} C ${72 + j(3)} ${19 + j(3)}, ${82 + j(2)} ${34 + j(3)}, ${81 + j(2)} ${51 + j(2)} ` +
+      `C ${80 + j(2)} ${69 + j(3)}, ${66 + j(3)} ${82 + j(2)}, ${49 + j(2)} ${81 + j(2)} ` +
+      `C ${31 + j(3)} ${80 + j(2)}, ${19 + j(2)} ${67 + j(3)}, ${20 + j(2)} ${49 + j(2)} ` +
+      `C ${21 + j(2)} ${31 + j(3)}, ${34 + j(3)} ${20 + j(2)}, ${57 + j(3)} ${22 + j(3)}`;
+    return `<svg${cls} viewBox="0 0 100 100" aria-hidden="true"><path pathLength="1" d="${d}"/></svg>`;
+  }
+  const cellLabel = (r, c, p) => `Row ${r + 1}, column ${c + 1}, ${p === 1 ? "X" : p === 2 ? "O" : "empty"}`;
+
+  function buildBoard() {
+    const N = S.N;
+    boardEl.innerHTML = "";
+    boardEl.style.setProperty("--n", N);
+    cells = [];
+    const frag = document.createDocumentFragment();
+    for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "cell"; b.dataset.r = r; b.dataset.c = c; b.tabIndex = -1;
+      b.setAttribute("aria-label", cellLabel(r, c, 0));
+      cells.push(b); frag.appendChild(b);
+    }
+    boardEl.appendChild(frag);
+    drawn = []; drawnN = N; winKey = "";
+    lineSvg.innerHTML = "";
+    lineSvg.setAttribute("viewBox", `0 0 ${N} ${N}`);
+    focusIdx = (N >> 1) * N + (N >> 1);
+    updateFocus(false);
+    sizeBoard();
+  }
+  function sizeBoard() {
+    const cs = getComputedStyle(page);
+    const w = page.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    const wide = window.matchMedia("(min-width: 860px)").matches;
+    const h = wide ? window.innerHeight - 110 : Infinity;
+    const cell = Math.max(16, Math.min(42, Math.floor(Math.min(w, h) / S.N)));
+    boardEl.style.setProperty("--cell", cell + "px");
+  }
+  function syncBoard() {
+    if (drawnN !== S.N) buildBoard();
+    const N = S.N;
+    let k = 0;
+    while (k < drawn.length && k < S.moves.length && drawn[k][0] === S.moves[k][0] && drawn[k][1] === S.moves[k][1]) k++;
+    for (let i = drawn.length - 1; i >= k; i--) {
+      const [r, c] = drawn[i], b = cells[r * N + c];
+      b.innerHTML = ""; b.className = "cell"; b.setAttribute("aria-label", cellLabel(r, c, 0));
+    }
+    const animate = S.moves.length - k <= 2;
+    for (let i = k; i < S.moves.length; i++) {
+      const [r, c] = S.moves[i], p = markOf(i), b = cells[r * N + c];
+      b.innerHTML = markSVG(p, animate);
+      b.className = "cell filled " + (p === 1 ? "x" : "o");
+      b.setAttribute("aria-label", cellLabel(r, c, p));
+    }
+    drawn = S.moves.map(m => m.slice());
+    cells.forEach(b => b.classList.remove("last"));
+    const last = S.moves[S.moves.length - 1];
+    if (last) cells[last[0] * N + last[1]].classList.add("last");
+    const key = win ? `${win.r1},${win.c1},${win.r2},${win.c2}` : "";
+    if (key !== winKey) {
+      winKey = key;
+      if (!win) lineSvg.innerHTML = "";
+      else {
+        const e = .35, p = winnerMark();
+        const x1 = win.c1 + .5 - win.dc * e, y1 = win.r1 + .5 - win.dr * e;
+        const x2 = win.c2 + .5 + win.dc * e, y2 = win.r2 + .5 + win.dr * e;
+        lineSvg.innerHTML = `<path pathLength="1" d="M${x1} ${y1} L${x2} ${y2}" style="stroke: var(${p === 1 ? "--ink-x" : "--ink-o"})"/>`;
+      }
+    }
+  }
+  function render() { syncBoard(); renderUI(); }
+
+  // ---------- whose move ----------
+  function myMark() {
+    const g = NET.g;
+    if (!g) return 0;
+    return NET.role === "host" ? g.hostMark : 3 - g.hostMark;
+  }
+  function canMoveNow() {
+    if (isOver()) return false;
+    switch (S.mode) {
+      case "ai": return !aiTimer && turn() === S.human;
+      case "pvp": return true;
+      case "msg": return !S.msg.waiting;
+      case "online": return !!NET.g && NET.connected && !NET.pending && myMark() === turn();
+    }
+    return false;
+  }
+  function handleCell(r, c) {
+    if (!board[r] || board[r][c] || !canMoveNow()) return;
+    if (S.mode === "ai" || S.mode === "pvp") localMove(r, c);
+    else if (S.mode === "msg") msgMove(r, c);
+    else if (S.mode === "online") onlineMove(r, c);
+  }
+
+  // ---------- local play ----------
+  function localMove(r, c) {
+    S.moves.push([r, c]);
+    recompute();
+    if (isOver()) { if (win) S.score[winnerMark()]++; else S.score.d++; save(); }
+    render();
+    maybeAI();
+  }
+  function newLocalGame() {
+    clearTimeout(aiTimer); aiTimer = null;
+    S.N = S.size; S.moves = [];
+    recompute(); render(); maybeAI();
+  }
+  function lineValue(r, c, p) {
+    const N = S.N, o = 3 - p;
+    let total = 0;
+    for (const [dr, dc] of DIRS) {
+      for (let s = -4; s <= 0; s++) {
+        let k = 0, ok = true;
+        for (let i = 0; i < 5; i++) {
+          const rr = r + (s + i) * dr, cc = c + (s + i) * dc;
+          if (rr < 0 || cc < 0 || rr >= N || cc >= N) { ok = false; break; }
+          if (rr === r && cc === c) continue;
+          const v = board[rr][cc];
+          if (v === o) { ok = false; break; }
+          if (v === p) k++;
+        }
+        if (ok) total += W[k + 1];
+      }
+    }
+    return total;
+  }
+  function near(r, c) {
+    const N = S.N;
+    for (let dr = -2; dr <= 2; dr++) for (let dc = -2; dc <= 2; dc++) {
+      const y = r + dr, x = c + dc;
+      if ((dr || dc) && y >= 0 && x >= 0 && y < N && x < N && board[y][x]) return true;
+    }
+    return false;
+  }
+  function chooseMove() {
+    const N = S.N, me = turn(), op = 3 - me, mid = (N - 1) / 2;
+    if (!S.moves.length) return { r: N >> 1, c: N >> 1 };
+    let best = null, bestS = -Infinity;
+    for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+      if (board[r][c] || !near(r, c)) continue;
+      const a = lineValue(r, c, me);
+      if (a >= W[5]) return { r, c };
+      const d = lineValue(r, c, op);
+      const s = a * 1.15 + d - (Math.abs(r - mid) + Math.abs(c - mid)) * .01 + Math.random() * .5;
+      if (s > bestS) { bestS = s; best = { r, c }; }
+    }
+    return best;
+  }
+  function maybeAI() {
+    if (S.mode !== "ai" || isOver() || turn() === S.human || aiTimer) return;
+    aiTimer = setTimeout(() => {
+      aiTimer = null;
+      if (S.mode !== "ai") return;
+      const m = chooseMove();
+      if (m) localMove(m.r, m.c);
+    }, 380);
+    renderUI();
+  }
+  function canUndo() {
+    if (aiTimer) return false;
+    if (S.mode === "msg") return S.msg.waiting && S.moves.length > 0;
+    if (isOver() || !S.moves.length) return false;
+    if (S.mode === "pvp") return true;
+    if (S.mode === "ai") return S.moves.some((m, i) => markOf(i) === S.human);
+    return false;
+  }
+  function undo() {
+    if (!canUndo()) return;
+    if (S.mode === "msg") { S.moves.pop(); S.msg.waiting = false; syncMsg(); setNote(msgNote, ""); }
+    else if (S.mode === "pvp") S.moves.pop();
+    else { let p; do { p = markOf(S.moves.length - 1); S.moves.pop(); } while (S.moves.length && p !== S.human); }
+    recompute(); render();
+  }
+
+  // ---------- play by message ----------
+  function syncMsg() { S.msg.N = S.N; S.msg.moves = encode(S.moves); saveMsg(); }
+  function enterMsg() { S.N = S.msg.N; S.moves = decode(S.msg.moves, S.N); recompute(); render(); }
+  const msgToken = () => `move-${S.N}-${encode(S.moves)}`;
+  const msgShare = () => (IS_WEB ? `${baseUrl()}#${msgToken()}` : `amoba-${S.N}-${encode(S.moves)}`);
+  function msgMove(r, c) {
+    S.moves.push([r, c]); S.msg.waiting = true;
+    recompute(); syncMsg(); render();
+    setNote(msgNote, "");
+  }
+  function loadMsgText(text, fromLink) {
+    const m = /(?:amoba|move)-(15|19)-([a-s]*)/i.exec(text || "");
+    if (!m) { setNote(msgNote, "That doesn’t look like an amőba move. Paste the whole link or code you received."); return false; }
+    S.N = +m[1];
+    S.moves = decode(m[2].toLowerCase(), S.N);
+    S.msg.waiting = false;
+    recompute(); syncMsg(); render();
+    $("#pasteCode").value = "";
+    setNote(msgNote, isOver() ? "Game loaded." : S.moves.length ? "Their move is on the board. Your turn." : "Empty board loaded. Your turn.");
+    return true;
+  }
+  function msgStartOver() {
+    S.N = S.size; S.moves = []; S.msg.waiting = false;
+    recompute(); syncMsg(); render(); setNote(msgNote, "");
+  }
+
+  // ---------- online play (browser to browser) ----------
+  const peerLib = () => typeof window.Peer === "function";
+  function noPeerLib() { setNote(onNote, "The connection library didn’t load. Check your internet connection and reload the page."); }
+  function scheduleRetry(fn, ms) { clearTimeout(NET.retry); NET.retry = setTimeout(fn, ms); }
+  function destroyPeer(delay) {
+    const p = NET.peer;
+    NET.peer = null;
+    if (p) setTimeout(() => { try { p.destroy(); } catch (e) {} }, delay || 0);
+  }
+  function netError(err, retryFn) {
+    const t = err && err.type;
+    if (t === "browser-incompatible") { setNote(onNote, "This browser can’t make direct connections. Try an up-to-date Chrome, Firefox, Safari or Edge."); return; }
+    setNote(onNote, "Can’t reach the connection service right now. Retrying…");
+    scheduleRetry(retryFn, 5000);
+  }
+  function inviteLink() { return `${baseUrl()}#join-${NET.code}`; }
+
+  function saveHost() {
+    if (NET.role !== "host") return;
+    lsSet(K.host, JSON.stringify({ code: NET.code, g: NET.g, token: NET.boundToken, oppName: NET.oppName }));
+  }
+  function validG(g) {
+    if (!g || typeof g !== "object") return null;
+    const sc = g.score && typeof g.score === "object" ? g.score : {};
+    return {
+      N: g.N === 19 ? 19 : 15,
+      moves: typeof g.moves === "string" ? g.moves : "",
+      round: Number.isFinite(g.round) ? g.round : 1,
+      hostMark: g.hostMark === 2 ? 2 : 1,
+      score: { host: +sc.host || 0, guest: +sc.guest || 0, d: +sc.d || 0 }
+    };
+  }
+  function applyG() {
+    const g = NET.g;
+    S.N = g.N;
+    S.moves = decode(g.moves, g.N);
+    recompute(); render();
+  }
+  function resetNet() {
+    clearTimeout(NET.retry);
+    Object.assign(NET, { role: null, code: null, conn: null, pendingConn: null, connected: false, ready: false, lastSeen: 0,
+                         boundToken: null, everJoined: false, full: false, pending: false, g: null, oppName: "" });
+  }
+  function leaveOnline(forget) {
+    let delay = 0;
+    if (forget && NET.conn && NET.connected) { try { NET.conn.send({ t: "bye" }); delay = 500; } catch (e) {} }
+    destroyPeer(delay);
+    resetNet();
+    if (forget) { lsDel(K.host); lsDel(K.join); setHash(""); }
+    if (S.mode === "online") { S.N = S.size; S.moves = []; recompute(); render(); }
+  }
+
+  // Host: the person who sends the invite keeps the official game.
+  function hostStart(saved) {
+    if (!peerLib()) { noPeerLib(); return; }
+    if (!IS_WEB) { setNote(onNote, "Invite links work once the game is on a website, such as GitHub Pages. Until then, use the other modes."); return; }
+    leaveOnline(false);
+    NET.role = "host";
+    if (saved) {
+      NET.code = saved.code; NET.g = validG(saved.g); NET.boundToken = saved.token || null;
+      NET.oppName = cleanName(saved.oppName); NET.everJoined = !!saved.token;
+    } else {
+      NET.code = randomCode(6);
+      NET.g = { N: S.size, moves: "", round: 1, hostMark: 1, score: { host: 0, guest: 0, d: 0 } };
+    }
+    lsDel(K.join);
+    saveHost();
+    applyG();
+    openHostPeer();
+  }
+  function openHostPeer() {
+    if (NET.role !== "host") return;
+    destroyPeer();
+    setNote(onNote, "Connecting…");
+    const peer = new Peer(PEER_PREFIX + NET.code, { debug: 0 });
+    NET.peer = peer;
+    peer.on("open", () => { if (NET.peer !== peer) return; NET.ready = true; setNote(onNote, ""); renderUI(); });
+    peer.on("connection", conn => { if (NET.peer === peer) hostAccept(conn); });
+    peer.on("disconnected", () => {
+      if (NET.peer !== peer || peer.destroyed) return;
+      NET.ready = false; renderUI();
+      scheduleRetry(() => { if (!peer.destroyed) { try { peer.reconnect(); } catch (e) { openHostPeer(); } } }, 3000);
+    });
+    peer.on("error", err => {
+      if (NET.peer !== peer) return;
+      NET.ready = false;
+      if (err.type === "unavailable-id") {
+        setNote(onNote, "Reopening your game. After a reload this can take up to a minute…");
+        scheduleRetry(openHostPeer, 5000);
+      } else if (err.type !== "peer-unavailable") netError(err, openHostPeer);
+      renderUI();
+    });
+  }
+  function hostAccept(conn) {
+    conn.on("data", msg => {
+      if (!msg || typeof msg !== "object") return;
+      if (msg.t === "hello") {
+        const tok = typeof msg.token === "string" ? msg.token.slice(0, 40) : "";
+        if (NET.boundToken && tok !== NET.boundToken && NET.conn && NET.connected) {
+          try { conn.send({ t: "full" }); } catch (e) {}
+          setTimeout(() => { try { conn.close(); } catch (e) {} }, 800);
+          return;
+        }
+        if (NET.conn && NET.conn !== conn) { const old = NET.conn; NET.conn = null; try { old.close(); } catch (e) {} }
+        NET.conn = conn; NET.connected = true; NET.lastSeen = Date.now();
+        NET.boundToken = tok; NET.everJoined = true; NET.oppName = cleanName(msg.name);
+        saveHost(); sendState(); setNote(onNote, ""); render();
+        return;
+      }
+      if (conn !== NET.conn) return;
+      NET.lastSeen = Date.now();
+      if (msg.t === "move") {
+        const { r, c, n } = msg;
+        const guestMark = 3 - NET.g.hostMark;
+        if (!Number.isInteger(r) || !Number.isInteger(c) || r < 0 || c < 0 || r >= S.N || c >= S.N) return sendState();
+        if (n !== S.moves.length || isOver() || turn() !== guestMark || board[r][c]) return sendState();
+        hostApply(r, c);
+      } else if (msg.t === "again") hostAgain();
+      else if (msg.t === "name") { NET.oppName = cleanName(msg.name); saveHost(); renderUI(); }
+    });
+    conn.on("open", () => { if (conn === NET.conn) sendState(); });
+    const lost = () => { if (conn === NET.conn) { NET.conn = null; NET.connected = false; renderUI(); } };
+    conn.on("close", lost);
+    conn.on("error", lost);
+  }
+  function sendState() {
+    if (!NET.conn || !NET.connected || !NET.g) return;
+    const g = NET.g;
+    try { NET.conn.send({ t: "state", N: g.N, moves: g.moves, round: g.round, hostMark: g.hostMark, score: g.score, name: myName() }); } catch (e) {}
+  }
+  function hostApply(r, c) {
+    const g = NET.g;
+    S.moves.push([r, c]);
+    g.moves = encode(S.moves);
+    recompute();
+    if (isOver()) {
+      const wm = winnerMark();
+      if (!wm) g.score.d++; else if (wm === g.hostMark) g.score.host++; else g.score.guest++;
+    }
+    saveHost(); sendState(); render();
+  }
+  function hostAgain() {
+    const g = NET.g;
+    if (!g || !isOver()) return;
+    g.round++; g.moves = ""; g.hostMark = 3 - g.hostMark;
+    saveHost(); applyG(); sendState();
+  }
+
+  // Guest: the person who opens the invite link.
+  function guestStart(code) {
+    if (!peerLib()) { noPeerLib(); return; }
+    leaveOnline(false);
+    NET.role = "guest"; NET.code = code;
+    lsSet(K.join, code);
+    setHash("join-" + code);
+    S.N = S.size; S.moves = []; recompute(); render();
+    openGuestPeer();
+  }
+  function openGuestPeer() {
+    if (NET.role !== "guest") return;
+    destroyPeer();
+    setNote(onNote, "Connecting…");
+    const peer = new Peer({ debug: 0 });
+    NET.peer = peer;
+    peer.on("open", () => { if (NET.peer !== peer) return; NET.ready = true; connectToHost(); });
+    peer.on("disconnected", () => {
+      if (NET.peer !== peer || peer.destroyed) return;
+      NET.ready = false;
+      scheduleRetry(() => { if (!peer.destroyed) { try { peer.reconnect(); } catch (e) { openGuestPeer(); } } }, 3000);
+    });
+    peer.on("error", err => {
+      if (NET.peer !== peer) return;
+      if (err.type === "peer-unavailable") {
+        if (!NET.connected) {
+          setNote(onNote, "Waiting for the other player to open the game…");
+          scheduleRetry(connectToHost, 4000);
+        }
+      } else netError(err, openGuestPeer);
+      renderUI();
+    });
+  }
+  function connectToHost() {
+    const peer = NET.peer;
+    if (NET.role !== "guest" || NET.full || NET.connected) return;
+    if (!peer || peer.destroyed) { openGuestPeer(); return; }
+    if (peer.disconnected) { try { peer.reconnect(); } catch (e) {} scheduleRetry(connectToHost, 3000); return; }
+    if (NET.pendingConn) { try { NET.pendingConn.close(); } catch (e) {} }
+    const conn = peer.connect(PEER_PREFIX + NET.code, { reliable: true });
+    NET.pendingConn = conn;
+    const giveUp = setTimeout(() => {
+      if (NET.pendingConn === conn && !NET.connected) {
+        NET.pendingConn = null;
+        try { conn.close(); } catch (e) {}
+        scheduleRetry(connectToHost, 2000);
+      }
+    }, 12000);
+    conn.on("open", () => {
+      clearTimeout(giveUp);
+      if (NET.pendingConn !== conn) { try { conn.close(); } catch (e) {} return; }
+      NET.pendingConn = null; NET.conn = conn; NET.connected = true; NET.lastSeen = Date.now();
+      setNote(onNote, "");
+      try { conn.send({ t: "hello", token: myToken(), name: myName() }); } catch (e) {}
+      renderUI();
+    });
+    conn.on("data", msg => {
+      if (conn !== NET.conn || !msg || typeof msg !== "object") return;
+      NET.lastSeen = Date.now();
+      guestData(msg);
+    });
+    const lost = () => { clearTimeout(giveUp); if (conn === NET.conn) guestLost(); };
+    conn.on("close", lost);
+    conn.on("error", lost);
+  }
+  function guestLost() {
+    NET.conn = null; NET.connected = false; NET.pending = false;
+    renderUI();
+    if (NET.role === "guest" && !NET.full) {
+      setNote(onNote, "Connection lost. Reconnecting…");
+      scheduleRetry(connectToHost, 2000);
+    }
+  }
+  function guestData(msg) {
+    if (msg.t === "state") {
+      NET.g = validG(msg);
+      NET.oppName = cleanName(msg.name);
+      NET.pending = false;
+      if (onNote.textContent.startsWith("Connect") || onNote.textContent.startsWith("Waiting")) setNote(onNote, "");
+      applyG();
+    } else if (msg.t === "full") {
+      NET.full = true;
+      setNote(onNote, "This game already has two players. Ask for a new invite link.");
+      renderUI();
+    } else if (msg.t === "bye") {
+      leaveOnline(true);
+      setNote(onNote, "The other player ended the game. Ask them for a new invite link to play again.");
+      renderUI();
+    }
+  }
+
+  function onlineMove(r, c) {
+    if (NET.role === "host") { hostApply(r, c); return; }
+    NET.pending = true;
+    try { NET.conn.send({ t: "move", r, c, n: S.moves.length }); } catch (e) { NET.pending = false; }
+    setTimeout(() => { if (NET.pending) { NET.pending = false; renderUI(); } }, 6000);
+    renderUI();
+  }
+  function playAgain() {
+    if (NET.role === "host") hostAgain();
+    else if (NET.conn) { try { NET.conn.send({ t: "again" }); } catch (e) {} }
+  }
+
+  // Keep-alive: notice dropped connections, especially on phones.
+  setInterval(() => {
+    if (!NET.conn || !NET.connected) return;
+    try { NET.conn.send({ t: "ping" }); } catch (e) {}
+    if (Date.now() - NET.lastSeen > 15000) {
+      const c = NET.conn;
+      if (NET.role === "host") { NET.conn = null; NET.connected = false; renderUI(); }
+      else guestLost();
+      try { c.close(); } catch (e) {}
+    }
+  }, 4000);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState !== "visible") return;
+    if (NET.role === "guest" && !NET.connected && !NET.full) { clearTimeout(NET.retry); connectToHost(); }
+    if (NET.role === "host") {
+      if (!NET.peer || NET.peer.destroyed) openHostPeer();
+      else if (NET.peer.disconnected) { try { NET.peer.reconnect(); } catch (e) {} }
+    }
+  });
+
+  async function shareOrCopy(text, url, input, noteEl) {
+    if (navigator.share) {
+      try { await navigator.share(url ? { title: "Amőba", text, url } : { title: "Amőba", text }); return; }
+      catch (e) { if (e && e.name === "AbortError") return; }
+    }
+    const full = url ? `${text} ${url}` : text;
+    try {
+      await navigator.clipboard.writeText(full);
+      setNote(noteEl, "Copied. Paste it into a message.");
+    } catch (e) {
+      input.focus(); input.select();
+      setNote(noteEl, "Copying was blocked. The text is selected, so copy it yourself.");
+    }
+  }
+
+  // ---------- mode switching ----------
+  function enterOnline() {
+    S.N = S.size; S.moves = []; recompute(); render();
+    let saved = null;
+    try { saved = JSON.parse(lsGet(K.host) || "null"); } catch (e) {}
+    const joined = lsGet(K.join);
+    if (saved && typeof saved.code === "string" && /^[a-z2-9]{6}$/.test(saved.code)) hostStart(saved);
+    else if (joined && /^[a-z2-9]{6}$/.test(joined)) guestStart(joined);
+  }
+  function setMode(m) {
+    if (S.mode === m) return;
+    clearTimeout(aiTimer); aiTimer = null;
+    if (S.mode === "online") leaveOnline(false);
+    S.mode = m; save();
+    setNote(onNote, ""); setNote(msgNote, "");
+    if (m === "ai" || m === "pvp") newLocalGame();
+    else if (m === "msg") enterMsg();
+    else enterOnline();
+  }
+
+  // ---------- UI ----------
+  function oppLabel(capital) {
+    if (NET.oppName) return esc(NET.oppName);
+    return capital ? "The other player" : "the other player";
+  }
+  function statusHTML() {
+    const t = turn(), wm = winnerMark(), over = isOver();
+    switch (S.mode) {
+      case "ai":
+        if (over) return wm ? (wm === S.human ? `You win! Five ${ink(wm)}s in a row.` : "The computer wins this one. Try again?") : DRAW;
+        if (aiTimer) return "The computer is thinking…";
+        return `Your move. You’re ${ink(S.human)}.`;
+      case "pvp":
+        if (over) return wm ? `${ink(wm)} wins!` : DRAW;
+        return `${ink(t)} to move.`;
+      case "msg":
+        if (over) return (wm ? `${ink(wm)} wins!` : DRAW) + (S.msg.waiting ? " Send it so they see the last move." : "");
+        if (S.msg.waiting) return "Now send your move. When the reply comes, tap the link or paste it below.";
+        if (!S.moves.length) return `You’re ${ink(1)}. Make the first move, then send it.`;
+        return `Your move as ${ink(t)}.`;
+      case "online": {
+        if (!NET.role) return "Invite someone with a link and play together live.";
+        if (NET.role === "host") {
+          if (!NET.ready && !NET.connected) return "Connecting…";
+          if (!NET.everJoined) return "Send the invite link. The game starts when they open it.";
+        } else if (!NET.g) {
+          return NET.full ? "This game is full." : "Connecting to the game…";
+        }
+        if (over) {
+          if (!wm) return DRAW;
+          return wm === myMark() ? "You win! Press “Play again” for another round." : `${oppLabel(true)} wins this round.`;
+        }
+        if (!NET.connected) return NET.role === "host" ? `${oppLabel(true)} is offline. They can reopen the link to carry on.` : "Reconnecting…";
+        if (myMark() === t) return `Your move. You’re ${ink(t)}.`;
+        return `Waiting for ${oppLabel(false)} to move…`;
+      }
+    }
+    return "";
+  }
+  function setSide(markEl, mark) {
+    markEl.textContent = mark === 1 ? "X" : "O";
+    markEl.className = "mark " + (mark === 1 ? "ink-x" : "ink-o");
+  }
+  function renderUI() {
+    const mode = S.mode, local = mode === "ai" || mode === "pvp";
+    boardEl.dataset.turn = turn();
+    boardEl.classList.toggle("locked", !canMoveNow());
+    statusEl.innerHTML = statusHTML();
+
+    const scoreBlock = $("#scoreBlock");
+    if (local) {
+      scoreBlock.hidden = false;
+      setSide($("#mx"), 1); setSide($("#mo"), 2);
+      $("#sx").textContent = S.score[1];
+      $("#so").textContent = S.score[2];
+      $("#draws").textContent = `Draws: ${S.score.d}`;
+      const ai = mode === "ai";
+      $("#lx").textContent = ai ? (S.human === 1 ? "You" : "Computer") : "Player 1";
+      $("#lo").textContent = ai ? (S.human === 2 ? "You" : "Computer") : "Player 2";
+    } else if (mode === "online" && NET.g && (NET.role === "guest" || NET.everJoined)) {
+      const g = NET.g, mine = myMark(), host = NET.role === "host";
+      scoreBlock.hidden = false;
+      setSide($("#mx"), mine); setSide($("#mo"), 3 - mine);
+      $("#sx").textContent = host ? g.score.host : g.score.guest;
+      $("#so").textContent = host ? g.score.guest : g.score.host;
+      $("#lx").textContent = "You";
+      $("#lo").textContent = NET.oppName || "Them";
+      $("#draws").textContent = `Draws: ${g.score.d}. You swap X and O each round.`;
+    } else {
+      scoreBlock.hidden = true;
+    }
+
+    // online panel
+    $("#onlinePanel").hidden = mode !== "online";
+    const inGame = !!NET.role;
+    $("#lobby").hidden = inGame;
+    $("#ingame").hidden = !inGame;
+    $("#inviteBox").hidden = NET.role !== "host";
+    if (NET.role === "host") $("#inviteLink").value = inviteLink();
+    $("#leaveBtn").textContent = NET.role === "host" ? "End game" : "Leave game";
+    $("#againBtn").hidden = !(inGame && NET.g && NET.connected && isOver());
+    const line = $("#connLine");
+    if (inGame && (NET.everJoined || NET.role === "guest")) {
+      line.innerHTML = `<span class="dot${NET.connected ? " on" : ""}"></span>`;
+      line.append(NET.connected ? `Connected to ${NET.oppName || "the other player"}` : "Not connected right now");
+      line.hidden = false;
+    } else line.hidden = true;
+
+    // message panel
+    $("#msgPanel").hidden = mode !== "msg";
+    $("#sendBox").hidden = !S.msg.waiting;
+    $("#sendCode").value = msgShare();
+
+    // settings and buttons
+    $("#sideSet").hidden = mode !== "ai";
+    $("#sizeSet").disabled = mode === "online" && inGame;
+    $("#newBtn").hidden = !(local || mode === "msg");
+    $("#newBtn").textContent = mode === "msg" ? "Start over" : "New game";
+    $("#undoBtn").hidden = !(local || mode === "msg");
+    $("#undoBtn").disabled = !canUndo();
+    $("#resetBtn").hidden = !local;
+    $("#settingsNote").textContent = mode === "online"
+      ? "Board size applies to the next game you start. On a keyboard, use the arrow keys and Enter to play."
+      : "Changing a setting starts a new game. On a keyboard, use the arrow keys to move around the board and Enter to place a mark.";
+
+    document.querySelector(`input[name=mode][value="${mode}"]`).checked = true;
+    document.querySelector(`input[name=human][value="${S.human}"]`).checked = true;
+    document.querySelector(`input[name=size][value="${S.size}"]`).checked = true;
+  }
+  function updateFocus(move) {
+    cells.forEach((b, i) => { b.tabIndex = i === focusIdx ? 0 : -1; });
+    if (move && cells[focusIdx]) cells[focusIdx].focus();
+  }
+
+  // ---------- events ----------
+  boardEl.addEventListener("click", e => {
+    const b = e.target.closest(".cell");
+    if (b) handleCell(+b.dataset.r, +b.dataset.c);
+  });
+  boardEl.addEventListener("focusin", e => {
+    const b = e.target.closest(".cell");
+    if (!b) return;
+    const idx = +b.dataset.r * S.N + +b.dataset.c;
+    if (idx !== focusIdx) { focusIdx = idx; updateFocus(false); }
+  });
+  boardEl.addEventListener("keydown", e => {
+    const N = S.N;
+    let r = Math.floor(focusIdx / N), c = focusIdx % N;
+    switch (e.key) {
+      case "ArrowUp": r--; break;
+      case "ArrowDown": r++; break;
+      case "ArrowLeft": c--; break;
+      case "ArrowRight": c++; break;
+      case "Home": c = 0; break;
+      case "End": c = N - 1; break;
+      default: return;
+    }
+    e.preventDefault();
+    r = Math.max(0, Math.min(N - 1, r)); c = Math.max(0, Math.min(N - 1, c));
+    focusIdx = r * N + c;
+    updateFocus(true);
+  });
+
+  document.querySelectorAll("input[name=mode]").forEach(i => i.addEventListener("change", () => setMode(i.value)));
+  document.querySelectorAll("input[name=human]").forEach(i => i.addEventListener("change", () => { S.human = +i.value; save(); newLocalGame(); }));
+  document.querySelectorAll("input[name=size]").forEach(i => i.addEventListener("change", () => {
+    S.size = +i.value; save();
+    if (S.mode === "ai" || S.mode === "pvp") newLocalGame();
+    else if (S.mode === "msg") msgStartOver();
+    else renderUI();
+  }));
+  $("#newBtn").addEventListener("click", () => { if (S.mode === "msg") msgStartOver(); else newLocalGame(); });
+  $("#undoBtn").addEventListener("click", undo);
+  $("#resetBtn").addEventListener("click", () => { S.score = { 1: 0, 2: 0, d: 0 }; save(); renderUI(); });
+
+  $("#inviteBtn").addEventListener("click", () => hostStart(null));
+  $("#shareBtn").addEventListener("click", () => shareOrCopy("Let’s play amőba! Tap to join my game:", inviteLink(), $("#inviteLink"), onNote));
+  $("#leaveBtn").addEventListener("click", () => { leaveOnline(true); setNote(onNote, ""); renderUI(); });
+  $("#againBtn").addEventListener("click", playAgain);
+  let nameTimer = null;
+  $("#myName").addEventListener("input", () => {
+    clearTimeout(nameTimer);
+    nameTimer = setTimeout(() => {
+      lsSet(K.name, myName());
+      if (NET.role === "host") sendState();
+      else if (NET.conn && NET.connected) { try { NET.conn.send({ t: "name", name: myName() }); } catch (e) {} }
+    }, 600);
+  });
+
+  $("#copyCodeBtn").addEventListener("click", () => {
+    if (IS_WEB) shareOrCopy("My amőba move:", msgShare(), $("#sendCode"), msgNote);
+    else shareOrCopy(`My amőba move: ${msgShare()}`, null, $("#sendCode"), msgNote);
+  });
+  $("#loadBtn").addEventListener("click", () => loadMsgText($("#pasteCode").value));
+  $("#pasteCode").addEventListener("keydown", e => { if (e.key === "Enter") loadMsgText($("#pasteCode").value); });
+
+  if ("ResizeObserver" in window) new ResizeObserver(sizeBoard).observe(page);
+  window.addEventListener("resize", sizeBoard);
+
+  // ---------- start ----------
+  function handleHash() {
+    const hash = location.hash || "";
+    const joinMatch = /^#join-([a-z2-9]{6})$/i.exec(hash);
+    const moveMatch = /^#move-(15|19)-([a-s]*)$/i.exec(hash);
+    if (joinMatch) {
+      const code = joinMatch[1].toLowerCase();
+      if (NET.role === "guest" && NET.code === code) return true;
+      if (S.mode !== "online") { clearTimeout(aiTimer); aiTimer = null; S.mode = "online"; save(); }
+      let saved = null;
+      try { saved = JSON.parse(lsGet(K.host) || "null"); } catch (e) {}
+      if (saved && saved.code === code) {          // the host tapped their own link
+        setHash("");
+        if (!(NET.role === "host" && NET.code === code)) hostStart(saved); else renderUI();
+      } else guestStart(code);
+      return true;
+    }
+    if (moveMatch) {
+      if (S.mode === "online") leaveOnline(false);
+      clearTimeout(aiTimer); aiTimer = null;
+      S.mode = "msg"; save();
+      enterMsg();
+      loadMsgText(hash);
+      setHash("");
+      return true;
+    }
+    return false;
+  }
+  window.addEventListener("hashchange", handleHash);
+
+  load();
+  if (!handleHash()) {
+    if (S.mode === "ai" || S.mode === "pvp") newLocalGame();
+    else if (S.mode === "msg") enterMsg();
+    else enterOnline();
+  }
+})();
+</script>
+</body>
+</html>
