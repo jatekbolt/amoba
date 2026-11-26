@@ -171,7 +171,8 @@
     padding: .55rem .7rem;
   }
   .panel-msg { font-size: .9rem; margin: 0; min-height: 1.2em; }
-  .lang { display: flex; gap: .35rem; margin: 0 0 .9rem; }
+  .pills { display: flex; flex-wrap: wrap; gap: .5rem 1.1rem; margin: 0 0 .9rem; }
+  .lang { display: flex; gap: .35rem; margin: 0; }
   .home { display: inline-block; margin: 0 0 .7rem; font-size: .9rem; color: var(--ink-x); text-underline-offset: 3px; }
   .home:focus-visible { outline: 2px solid var(--ink-x); outline-offset: 2px; border-radius: 4px; }
   .lang-btn {
@@ -186,14 +187,24 @@
   }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js"></script>
+<script>
+  try { var th = localStorage.getItem("amoba-theme"); if (th === "light" || th === "dark") document.documentElement.setAttribute("data-theme", th); } catch (e) {}
+</script>
 </head>
 <body>
 <main class="layout">
   <header class="intro">
     <a class="home" href="/" data-i18n="allGames"></a>
-    <div class="lang" role="group" aria-label="Language / Nyelv">
-      <button type="button" class="lang-btn" data-lang="hu" lang="hu">Magyar</button>
-      <button type="button" class="lang-btn" data-lang="en" lang="en">English</button>
+    <div class="pills">
+      <div class="lang" role="group" aria-label="Language / Nyelv">
+        <button type="button" class="lang-btn" data-lang="hu" lang="hu">Magyar</button>
+        <button type="button" class="lang-btn" data-lang="en" lang="en">English</button>
+      </div>
+      <div class="lang" role="group" data-i18n-aria="themeAria">
+        <button type="button" class="lang-btn theme-btn" data-theme-choice="auto" data-i18n="themeAuto"></button>
+        <button type="button" class="lang-btn theme-btn" data-theme-choice="light" data-i18n="themeLight"></button>
+        <button type="button" class="lang-btn theme-btn" data-theme-choice="dark" data-i18n="themeDark"></button>
+      </div>
     </div>
     <h1>Amőba</h1>
     <p class="rules" data-i18n="rules"></p>
@@ -306,7 +317,7 @@
   const PEER_PREFIX = "amoba-5iar-";
   const T = {
     en: {
-      title: "Amőba: five in a row", allGames: "← All games",
+      title: "Amőba: five in a row", allGames: "← All games", themeAria: "Appearance", themeAuto: "Auto", themeLight: "Light", themeDark: "Dark",
       rules: "Take turns marking squares. The first to get five in a row across, down or diagonally wins.",
       scoreAria: "Score", boardAria: "Game board", settingsAria: "Game settings",
       legendMode: "Play against", optAi: "The computer", optPvp: "Someone next to you", optOnline: "Someone online", optMsg: "By message",
@@ -350,7 +361,7 @@
       shareInvite: "Let’s play amőba! Tap to join my game:", shareMove: "My amőba move:"
     },
     hu: {
-      title: "Amőba: öt egy sorban", allGames: "← Összes játék",
+      title: "Amőba: öt egy sorban", allGames: "← Összes játék", themeAria: "Megjelenés", themeAuto: "Auto", themeLight: "Világos", themeDark: "Sötét",
       rules: "Felváltva rajzoljátok a jeleket a négyzetekbe. Az nyer, aki elsőként kirak ötöt egy sorban: vízszintesen, függőlegesen vagy átlósan.",
       scoreAria: "Eredmény", boardAria: "Játéktábla", settingsAria: "Beállítások",
       legendMode: "Ellenfél", optAi: "A gép", optPvp: "Valaki melletted", optOnline: "Valaki online", optMsg: "Üzenetben",
@@ -1254,6 +1265,21 @@
   }
   applyLang();
 })();
+</script>
+<script>
+  // Appearance: follow the device (auto), or always light or dark. Shared by all the games on this site.
+  (function () {
+    const root = document.documentElement;
+    function current() { const v = root.getAttribute("data-theme"); return v === "light" || v === "dark" ? v : "auto"; }
+    function mark() { document.querySelectorAll(".theme-btn").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.themeChoice === current()))); }
+    document.querySelectorAll(".theme-btn").forEach(b => b.addEventListener("click", () => {
+      const v = b.dataset.themeChoice;
+      if (v === "auto") root.removeAttribute("data-theme"); else root.setAttribute("data-theme", v);
+      try { if (v === "auto") localStorage.removeItem("amoba-theme"); else localStorage.setItem("amoba-theme", v); } catch (e) {}
+      mark();
+    }));
+    mark();
+  })();
 </script>
 </body>
 </html>
