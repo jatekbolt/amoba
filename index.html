@@ -27,6 +27,9 @@
     padding-top: env(safe-area-inset-top, 0px);
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
+  :root[data-contrast="high"] {
+    --grid: #6F8BA8; --muted: #34414E; --edge: #7C8DA0; --text: #0E1620; --ink-x: #0033A0; --ink-o: #C24A00; --hl: rgba(255, 196, 0, .72);
+  }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --desk: #0F151D; --paper: #18212D; --grid: #2D3E53; --margin: #94444D;
@@ -41,6 +44,15 @@
     --edge: #2A3647; --hl: rgba(255, 214, 90, .2);
     color-scheme: dark;
   }
+  @media (prefers-color-scheme: dark) {
+    :root[data-contrast="high"]:not([data-theme="light"]) { --grid: #6A84A3; --muted: #D2DBE5; --edge: #6A7C92; --text: #FFFFFF; --ink-x: #A8C2FF; --ink-o: #FFA060; --hl: rgba(255, 210, 60, .38); }
+  }
+  :root[data-contrast="high"][data-theme="dark"] { --grid: #6A84A3; --muted: #D2DBE5; --edge: #6A7C92; --text: #FFFFFF; --ink-x: #A8C2FF; --ink-o: #FFA060; --hl: rgba(255, 210, 60, .38); }
+  :root[data-contrast="high"] *:focus-visible { outline-width: 3px !important; }
+  :root[data-contrast="high"] .lang-btn[aria-pressed="true"] { border-width: 2.5px; }
+  :root[data-contrast="high"] .cell path { stroke-width: 12; }
+  :root[data-contrast="high"] .winline path { stroke-width: .22; opacity: 1; }
+  :root[data-contrast="high"] .cell.last { box-shadow: inset 0 0 0 3px var(--text); }
   *, *::before, *::after { box-sizing: inherit; }
   [hidden] { display: none !important; }
   html { scroll-padding-top: env(safe-area-inset-top, 0px); }
@@ -188,7 +200,10 @@
 </style>
 <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js"></script>
 <script>
-  try { var th = localStorage.getItem("amoba-theme"); if (th === "light" || th === "dark") document.documentElement.setAttribute("data-theme", th); } catch (e) {}
+  try {
+    var th = localStorage.getItem("amoba-theme"); if (th === "light" || th === "dark") document.documentElement.setAttribute("data-theme", th);
+    if (localStorage.getItem("amoba-contrast") === "high") document.documentElement.setAttribute("data-contrast", "high");
+  } catch (e) {}
 </script>
 </head>
 <body>
@@ -205,6 +220,10 @@
         <button type="button" class="lang-btn theme-btn" data-theme-choice="light" data-i18n="themeLight"></button>
         <button type="button" class="lang-btn theme-btn" data-theme-choice="dark" data-i18n="themeDark"></button>
       </div>
+      <div class="lang" role="group" data-i18n-aria="contrastAria">
+        <button type="button" class="lang-btn contrast-btn" data-i18n="contrastBtn" aria-pressed="false"></button>
+      </div>
+    </div>
     </div>
     <h1>Amőba</h1>
     <p class="rules" data-i18n="rules"></p>
@@ -317,7 +336,7 @@
   const PEER_PREFIX = "amoba-5iar-";
   const T = {
     en: {
-      title: "Amőba: five in a row", allGames: "← All games", themeAria: "Appearance", themeAuto: "Auto", themeLight: "Light", themeDark: "Dark",
+      title: "Amőba: five in a row", allGames: "← All games", contrastAria: "Visibility", contrastBtn: "High-visibility mode", themeAria: "Appearance", themeAuto: "Auto", themeLight: "Light", themeDark: "Dark",
       rules: "Take turns marking squares. The first to get five in a row across, down or diagonally wins.",
       scoreAria: "Score", boardAria: "Game board", settingsAria: "Game settings",
       legendMode: "Play against", optAi: "The computer", optPvp: "Someone next to you", optOnline: "Someone online", optMsg: "By message",
@@ -361,7 +380,7 @@
       shareInvite: "Let’s play amőba! Tap to join my game:", shareMove: "My amőba move:"
     },
     hu: {
-      title: "Amőba: öt egy sorban", allGames: "← Összes játék", themeAria: "Megjelenés", themeAuto: "Auto", themeLight: "Világos", themeDark: "Sötét",
+      title: "Amőba: öt egy sorban", allGames: "← Összes játék", contrastAria: "Láthatóság", contrastBtn: "Színtévesztő mód", themeAria: "Megjelenés", themeAuto: "Auto", themeLight: "Világos", themeDark: "Sötét",
       rules: "Felváltva rajzoljátok a jeleket a négyzetekbe. Az nyer, aki elsőként kirak ötöt egy sorban: vízszintesen, függőlegesen vagy átlósan.",
       scoreAria: "Eredmény", boardAria: "Játéktábla", settingsAria: "Beállítások",
       legendMode: "Ellenfél", optAi: "A gép", optPvp: "Valaki melletted", optOnline: "Valaki online", optMsg: "Üzenetben",
@@ -406,6 +425,7 @@
     }
   };
   let LANG = "en";
+  const HC = () => document.documentElement.getAttribute("data-contrast") === "high";
   function t(k, ...a) {
     const v = (T[LANG] && k in T[LANG]) ? T[LANG][k] : T.en[k];
     return typeof v === "function" ? v(...a) : (v == null ? "" : v);
@@ -1256,6 +1276,7 @@
     applyLang();
   }));
 
+  window.addEventListener("contrastchange", () => render());
   load();
   LANG = detectLang();
   if (!handleHash()) {
@@ -1267,16 +1288,26 @@
 })();
 </script>
 <script>
-  // Appearance: follow the device (auto), or always light or dark. Shared by all the games on this site.
+  // Appearance and high-visibility mode: shared by all the games on this site.
   (function () {
     const root = document.documentElement;
     function current() { const v = root.getAttribute("data-theme"); return v === "light" || v === "dark" ? v : "auto"; }
-    function mark() { document.querySelectorAll(".theme-btn").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.themeChoice === current()))); }
+    function mark() {
+      document.querySelectorAll(".theme-btn").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.themeChoice === current())));
+      document.querySelectorAll(".contrast-btn").forEach(b => b.setAttribute("aria-pressed", String(root.getAttribute("data-contrast") === "high")));
+    }
     document.querySelectorAll(".theme-btn").forEach(b => b.addEventListener("click", () => {
       const v = b.dataset.themeChoice;
       if (v === "auto") root.removeAttribute("data-theme"); else root.setAttribute("data-theme", v);
       try { if (v === "auto") localStorage.removeItem("amoba-theme"); else localStorage.setItem("amoba-theme", v); } catch (e) {}
       mark();
+    }));
+    document.querySelectorAll(".contrast-btn").forEach(b => b.addEventListener("click", () => {
+      const on = root.getAttribute("data-contrast") !== "high";
+      if (on) root.setAttribute("data-contrast", "high"); else root.removeAttribute("data-contrast");
+      try { if (on) localStorage.setItem("amoba-contrast", "high"); else localStorage.removeItem("amoba-contrast"); } catch (e) {}
+      mark();
+      window.dispatchEvent(new Event("contrastchange"));
     }));
     mark();
   })();
